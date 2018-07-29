@@ -1,0 +1,91 @@
+############################################################
+# Peter Thompson May 2015
+# oz makefile makeX86
+# make -f makeX86   runs this makefile
+#     or make --file=makeX86
+#	  or make --makefile-makeX86
+
+# $@ is left side of :
+# $^ is right side of :
+# $< is 1st dependency of right side of : 
+
+# debug make -d 
+# make -p with no makefile dumps database of variables, implicit rules
+######################################################################
+
+# source *.c and object *.o subdirectories
+SRCDIR = src
+OBJDIR = obj
+
+
+# create a list of source filenames
+# SOURCES = extracts all *.c files in the directory specified,
+# directory path stripped.   New source directories must be added here!
+SOURCES = $(notdir $(wildcard src/ozdisplay/*.c)) \
+           $(notdir $(wildcard src/ozmaps/*.c)) 
+
+# count and print number of .c files found
+FILECOUNT = $(words $(SOURCES))
+$(warning  $(FILECOUNT) c programs to be compiled and linked)
+
+# define path to souce filenames.  New source directories must be added here!
+VPATH = src/ozdisplay : src/ozmaps 
+
+
+# create list of object filenames *.0 from source filenames *.c and print them
+XOBJECTS = $(SOURCES:.c=.o)  
+OBJECTS = $(patsubst %,$(OBJDIR)/%,$(XOBJECTS))  # prefix with obj/ directory
+# $(warning OBJECTS is $(OBJECTS))     # print list of object files for debug
+
+
+# name executable
+EXECUTABLE = bin/oz2imageX86         
+
+
+# compiler and compiler flags to use 
+CC = gcc
+CFLAGS += -I src/include/  # -c -M -I  -M replaces makedepend command 
+DEBUG = -g   # -g for gdb 
+
+LDLIBS += -lSDL2 -lSDL2_image -lSDL2_gfx -lSDL2_ttf -lm
+
+
+
+#################################################################
+# This is the guts of make - and it is complex!!!!   DO NOT TOUCH
+################################################################
+
+.PHONY: all clean distclean help
+
+
+all: $(EXECUTABLE)     
+
+# gcc obj/myfile1.o obj/myfile2.o... -o ozimage
+$(EXECUTABLE): $(OBJECTS)
+	@echo Peter linking
+	$(CC) $(DEBUG) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+# gcc -c src/gofindmeVPATH/myfile1.c....  -o obj/myfile1.o   NOTE %.o: %.c is a convention
+$(OBJDIR)/%.o: %.c
+	@echo Peter compiling
+	$(CC) -c  $(DEBUG) $(CFLAGS) $< -o $@
+
+#####################################################################
+
+clean:
+	@echo removing contents of obj and ozimage
+	rm -v ./obj/*.o; rm -v bin/oz2imageX86
+
+distclean:
+	@echo removing contents of obj,  ozimage and sourcebackup~
+	rm -v ./obj/*.o; rm -v bin/oz2imageX86; rm -v ./src/hello/*~; rm -v ./src/hello/*~
+
+help:
+	@echo Help is here from Peter 
+	@echo Enter helpinfo here....  
+
+
+
+
+
+

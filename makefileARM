@@ -1,0 +1,105 @@
+############################################################
+# Peter Thompson May 2016 - revised for ARM
+# revised July 2018 for using Buildroot cross compiler. 
+# see-> ftp://ftp.gnu.org/old-gnu/Manuals/make-3.79.1/html_chapter/make_2.html 
+#
+# make -f makeARM   runs this makefile
+#     or make --file=makeARM
+#	  or make --makefile=makeARM
+
+# $@ is left side of :
+# $^ is right side of :
+# $< is 1st dependency of right side of : 
+
+# debug make -d 
+# make -p with no makefile dumps database of variables, implicit rules
+
+# don't forget 
+#export CROSS_COMPILE=arm-linux-gnueabihf-
+#export PATH=$HOME/bbb2018/buildroot/output/host/bin:$PATH 
+#export SYSROOT_PATH=/home/peter/bbb2018/buildroot/output/staging
+#make -f makefileARM clean
+#make -f makefileARM
+#cp oz2imageARM ~/igep2015/pmtroot/usr/local/bin
+#
+######################################################################
+
+# source *.c and object *.o subdirectories
+SRCDIR = src
+OBJDIR = obj
+
+
+# create a list of source filenames
+# SOURCES = extracts all *.c files in the directory specified,
+# directory path stripped.   New source directories must be added here!
+SOURCES = $(notdir $(wildcard src/ozdisplay/*.c)) \
+           $(notdir $(wildcard src/ozmaps/*.c)) 
+
+# count and print number of .c files found
+FILECOUNT = $(words $(SOURCES))
+$(warning  $(FILECOUNT) c programs to be compiled and linked)
+
+# define path to souce filenames.  New source directories must be added here!
+VPATH = src/ozdisplay : src/ozmaps 
+
+
+# create list of object filenames *.0 from source filenames *.c and print them
+XOBJECTS = $(SOURCES:.c=.o)  
+OBJECTS = $(patsubst %,$(OBJDIR)/%,$(XOBJECTS))  # prefix with obj/ directory
+# $(warning OBJECTS is $(OBJECTS))     # print list of object files for debug
+
+
+# name executable
+EXECUTABLE = bin/oz2imageARM         
+
+
+# compiler and compiler flags to use 
+CC = $(CROSS_COMPILE)gcc
+CFLAGS +=  -I src/include/ --sysroot=$(SYSROOT_PATH)
+DEBUG = -g   # -g for gdb
+ 
+LDFLAGS += --sysroot=$(SYSROOT_PATH)
+LDFLAGS += -L $(SYSROOT_PATH)/usr/lib/
+
+LDLIBS +=  -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx -lm 
+
+
+
+#################################################################
+# This is the guts of make - and it is complex!!!!   DO NOT TOUCH
+################################################################
+
+.PHONY: all clean distclean help
+
+
+all: $(EXECUTABLE)     
+
+# gcc obj/myfile1.o obj/myfile2.o... -o ozimage
+$(EXECUTABLE): $(OBJECTS)
+	@echo Peter linking
+	$(CC) $(DEBUG) -o $@ $^ $(LDFLAGS) $(LDLIBS) 
+
+# gcc -c src/gofindmeVPATH/myfile1.c....  -o obj/myfile1.o   NOTE %.o: %.c is a convention
+$(OBJDIR)/%.o: %.c
+	@echo Peter compiling
+	$(CC) -c  $(DEBUG) $(CFLAGS) $< -o $@
+
+#####################################################################
+
+clean:
+	@echo removing contents of obj and ozimage
+	rm -v ./obj/*.o; rm -v bin/oz2imageARM
+
+distclean:
+	@echo removing contents of obj,  ozimage and sourcebackup~
+	rm -v ./obj/*.o; rm -v bin/oz2imageARM; rm -v ./src/hello/*~; rm -v ./src/hello/*~
+
+help:
+	@echo Help is here from Peter 
+	@echo Enter helpinfo here....  
+
+
+
+
+
+

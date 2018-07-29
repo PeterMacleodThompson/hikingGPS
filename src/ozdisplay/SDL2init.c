@@ -1,0 +1,218 @@
+/******************  SDL2init.c   ***************************/
+
+/* init SDL Video and GLOBAL Window, SDL GLOBAL Renderer, and SDL_Image file loading 
+
+FIXME BUG IN SDL WITH INTEL..... ALSO IN MY SYSTEM!!!!!   YIKES!!!!!
+
+	
+GOOGLE "sdl update texture doesn't work"  FOUND ON STACK EXCHANGE- SDL RENDER TO A TEXTURE
+I found out that the access violation was a bug in SDL that only happens in some drivers (intel graphics in my case) if I use SDL_RENDERER_SOFTWARE instead of SDL_RENDERER_ACCELERATED it works, so it is pretty much depending on your graphics card and its drivers.
+*/
+
+//#define DEBUG   //conditional compilation for debugging
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <stdio.h>
+
+#define SCREEN_WIDTH 500
+#define SCREEN_HEIGHT 500
+
+
+#define TRUE 1
+#define FALSE 0
+
+/* GLOBAL VARIABLES FOR WINDOW */
+SDL_Window* globalwindow;			//Display window we'll be rendering to 
+SDL_Renderer* globalrenderer; 		//The window renderer
+SDL_Texture* globaltexture;			//texture for display window 
+
+
+
+
+
+int initSDL2()
+{
+    int success = TRUE;
+
+	/* informational debugging variables */
+	SDL_RendererInfo info;
+	int r, i;
+
+	/* print machine video driver information */
+	r = SDL_GetNumVideoDrivers();
+	printf("Number of Video Drivers = %d\n", r);
+	i=0;
+	while(i < r)
+	{
+		printf(" video driver %d = %s\n", i, SDL_GetVideoDriver(i) ); 
+		i++;
+	}
+
+
+	//Initialize SDL2 - video only
+	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+	{
+		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+		success = FALSE;
+	}
+	else
+		printf("Current Video Driver = %s\n", SDL_GetCurrentVideoDriver()  ); 
+
+
+	//Create GLOBAL window
+	if(success == TRUE)
+	{
+		globalwindow = SDL_CreateWindow( "Peter was here!!", SDL_WINDOWPOS_UNDEFINED,
+			 SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		if( globalwindow == NULL )
+		{
+			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+			success = FALSE;
+		}
+	}
+
+		
+	/*Create GLOBAL renderer, use "software renderer" for now
+	see SDL_render.c in SDL2sources */
+	if(success == TRUE)
+	{	
+		/* print available renderer drivers */
+		r = SDL_GetNumRenderDrivers();
+		printf("NumRenderDrivers = %d\n", r );
+		i = 0;
+		while(i < r)
+		{
+			if ( SDL_GetRenderDriverInfo(i,&info) == 0 ) {
+				printf("driver name = %s\n",info.name);
+				printf("driver flags = %d\n", info.flags);
+				printf("num texture formats = %d\n", info.num_texture_formats);
+			}
+			i++;
+		}
+
+		/* set hint for different path in SDL_render.c - see SDL2sources */
+		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+
+	
+		/* initialize renderer */
+		globalrenderer = SDL_CreateRenderer( globalwindow, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
+		if( globalrenderer == NULL )
+		{
+			printf( "Renderer could not be created! SDL Error: %s\n",
+					SDL_GetError() );
+			success = FALSE;
+		}
+		else
+		{
+			/* print selected renderer */
+			SDL_GetRendererInfo(globalrenderer, &info);
+			printf(" Selected Renderer = %s\n", info.name);
+		}
+	}
+
+	//Initialize PNG, TIF, JPG loading
+	if(success == TRUE)
+	{
+		int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG;
+		if( !( IMG_Init( imgFlags ) & imgFlags ) )   {
+			printf( "SDL_image could not initialize! SDL_image Error: %s\n",
+							 IMG_GetError() );
+			success = FALSE;
+		}		
+	}
+
+
+
+	/*  create global textures 
+		for X86 use  SDL_PIXELFORMAT_ARGB8888,
+		for beaglebone black use SDL_PIXELFORMAT_RGB565*/
+	if(success == TRUE)
+	{
+		globaltexture = SDL_CreateTexture(globalrenderer,
+                               SDL_PIXELFORMAT_ARGB8888,
+                               SDL_TEXTUREACCESS_STREAMING,
+                               SCREEN_WIDTH, SCREEN_HEIGHT);
+		if( globaltexture == NULL )
+			{
+				printf( "Texture could not be created! SDL Error: %s\n", 
+						SDL_GetError() );
+				success = FALSE;
+			}
+
+		SDL_SetRenderDrawColor(globalrenderer,
+								255, 0, 0, 255); //for drawing, clearing; RGBA 
+		SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND); //FIXME 
+		//FIXME remove the above line after alpha works - installed for alpha
+
+	}
+
+	return(success);
+}
+
+void closeSDL2()
+{
+
+	//Destroy window
+	SDL_DestroyWindow( globalwindow );
+ 	SDL_DestroyRenderer( globalrenderer );
+ 	SDL_DestroyTexture( globaltexture );
+
+	globalwindow = NULL;
+ 	globalrenderer = NULL;
+	//Quit SDL subsystems IMG_Load
+	SDL_Quit();
+
+}
+
+
+#ifdef DEBUG
+/******** main for testing **********/
+
+main()
+{
+	SDL_Surface *removeme;
+
+    int err=0;
+
+
+	if( initSDL2()  )
+	{
+		printf(" err = %d\n", err);
+
+		//Create window working SDL_surface
+		removeme = SDL_GetWindowSurface( globalwindow );
+
+		//Colour the surface cyan
+		err = SDL_FillRect( removeme, NULL, 
+				SDL_MapRGB(removeme->format, 0xFF, 0x00, 0xFF ));
+		if(err != 0)
+			printf("SDL_FillRect Error %s\n", SDL_GetError()  );
+
+		err = SDL_UpdateTexture( globaltexture, NULL, 
+				removeme->pixels, removeme->pitch);	
+		if(err != 0)
+			printf("SDL_UpdateTexture Error %s\n", SDL_GetError()  );
+	
+		//Update the surface
+//		SDL_UpdateWindowSurface( globalwindow ); // THIS WORKS BY ITSELF!! 
+
+
+//  THESE 4 LINES ALSO WORK (REPLACES SINGLE LINE ABOVE) BUT IS SLOW AND FLAKY !!!!
+		err = SDL_RenderClear(globalrenderer);
+		err = SDL_RenderCopy(globalrenderer, globaltexture, NULL, NULL);
+		SDL_RenderPresent(globalrenderer);
+		if(err != 0)
+			printf("SDL_UpdateTexture Error %s\n", SDL_GetError()  );
+
+		//Wait two seconds
+		SDL_Delay( 2000 );
+
+		SDL_FreeSurface( removeme );		
+		closeSDL2();
+	}
+}
+
+
+#endif
+
