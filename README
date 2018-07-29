@@ -1,0 +1,102 @@
+Using the hikingGPS
+-------------------
+NOTE - you must cd to the hikingGPS/bin directory 
+and run ./oz2imageX86 or ./oz2imageARM 
+from within the bin/ directory. 
+
+	for Ubuntu on a Ubuntu machine
+	tar -xzvf hikingGPS.tar.gz
+	cd oz2/bin
+	./oz2imageX86
+
+	For ARM on a ARM machine
+	tar -xzvf hikingGPS.tar.gz
+	cd oz2/bin
+	./oz2imageARM
+
+
+If the above does not work, or if hikingGPS/bin/ is empty,
+ you need to recompile from sources (see below).
+
+
+
+hikingGPS structure
+----------------
+bin - contains binary imageoz2imageX86 and/or oz2imageARM
+images - contains all menues and fixed images 
+		  created on machine Avignon3 - ~/Downloads/topomaps/images/testimages/
+spriteimages - contains all sprite images + spritemaster.txt listing sprites + 
+	sprite creation instructions + spritemaster.txt		
+maps - contains mapset and maps for X86/ARM testing
+src - source files
+obj - object files (used by make only)
+
+
+
+NOTE
+----
+When switching between X86/ARM, you MUST run 
+make -f makefileX86 clean AND
+make -f makefileARM clean FIRST!! 
+Otherwise make links the wrong .o object files (X86 or ARM) without 
+first recompiling them.
+
+
+for X86 make
+-------------
+make -f makefileX86 clean
+make -f makefileX86   
+     	or make --file=makefileX86
+	  	or make --makefile=makefileX86
+
+
+for ARM make
+------------
+This must be compiled using the same machine and cross compiler
+ as the linux rootfs was compiled on (for lib compatibility).
+
+The following environment variables are required (examples shown):
+...cross compiler prefix
+export CROSS_COMPILE=arm-linux-gnueabihf-
+...path to gcc cross compiler
+export PATH=$PATH:$HOME/bbb2018/buildroot/output/host/bin
+...path to sysroot containing appropriate libraries
+export SYSROOT_PATH=/home/peter/bbb2018/buildroot/output/staging
+
+...then make
+make -f makefileARM clean
+make -f makefileARM
+...then copy to SDcard
+sudo ls /media/peter/rootfs/root/hikingGPS
+sudo rm -rf /media/peter/rootfs/root/hikingGPS
+sudo cp -a $HOME/bbb2018/hikingGPS   /media/peter/rootfs/root/
+
+
+
+for ARM make with sensors 
+-------------------------
+ change the following program in ~/...hikingGPS/src/ozdisplay:
+  displaymap.c line 165
+	//initsensors(); //comment this line out for X86, leave in for igepv2
+ change the following program in ~/...hikingGPS/src/ozmaps:
+  readsensors.c line 120
+	/* use only one of the following lines
+		next line for igepv2, following line for X86 
+	   comment out whichever line is appropriate */
+	//return( (uint64_t)gpsnow->longitude * 1000000 
+	//			+ (uint64_t)gpsnow->latitude );
+	return(782211451309);	// return Percy Lake as gps location 
+
+
+
+make tarball
+-------------
+tar cvfj hikingGPS.tar.bz2 bin/oz2imageX86 images/buttonsheet.png images/circle1.png images/questionmark.png images/ring3.png images/ringN.png images/styxwalkerR.png maps/C50k maps/C250k maps/CIMW maps/mapset
+tar -xvzf hikingGPS.tar.bz2
+
+
+makefile reference
+------------------
+ftp://ftp.gnu.org/old-gnu/Manuals/make-3.79.1/html_chapter/make_2.html
+
+

@@ -1,0 +1,11 @@
+#####  mapset file #######
+#
+#  1st character = # ==> comment, ignore record
+#
+#    formatting => leave  1+ space between each field
+#    
+# mapname   map usage    kscale  #ofmaps
+# 10 char  20 char
+#            
+######### ###########    ####### #######
+C50k      topographic    50      2	 
