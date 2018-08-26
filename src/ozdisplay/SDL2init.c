@@ -2,17 +2,17 @@
 
 /* init SDL Video and GLOBAL Window, SDL GLOBAL Renderer, and SDL_Image file loading 
 
-FIXME BUG IN SDL WITH INTEL..... ALSO IN MY SYSTEM!!!!!   YIKES!!!!!
+FIXME  SDL bug #4232 bugzilla Directfb requires hardware accelerator to work
+ workaround #1: add opengles to buildroot 
+ workaround #2: change SDL source SDL2/src/video/SDL_video.c
 
-	
-GOOGLE "sdl update texture doesn't work"  FOUND ON STACK EXCHANGE- SDL RENDER TO A TEXTURE
-I found out that the access violation was a bug in SDL that only happens in some drivers (intel graphics in my case) if I use SDL_RENDERER_SOFTWARE instead of SDL_RENDERER_ACCELERATED it works, so it is pretty much depending on your graphics card and its drivers.
 */
 
 //#define DEBUG   //conditional compilation for debugging
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_log.h>
 #include <stdio.h>
 
 #define SCREEN_WIDTH 500
@@ -26,7 +26,6 @@ I found out that the access violation was a bug in SDL that only happens in some
 SDL_Window* globalwindow;			//Display window we'll be rendering to 
 SDL_Renderer* globalrenderer; 		//The window renderer
 SDL_Texture* globaltexture;			//texture for display window 
-
 
 
 
@@ -45,9 +44,13 @@ int initSDL2()
 	i=0;
 	while(i < r)
 	{
-		printf(" video driver %d = %s\n", i, SDL_GetVideoDriver(i) ); 
+		printf("  video driver %d = %s\n", i, SDL_GetVideoDriver(i) ); 
 		i++;
 	}
+
+	/* debug SDL2 with messages to stderr */
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+	SDL_Log("SDL log is verbose\n");
 
 
 	//Initialize SDL2 - video only
@@ -56,15 +59,17 @@ int initSDL2()
 		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
 		success = FALSE;
 	}
-	else
+	else  
 		printf("Current Video Driver = %s\n", SDL_GetCurrentVideoDriver()  ); 
+
+
 
 
 	//Create GLOBAL window
 	if(success == TRUE)
 	{
-		globalwindow = SDL_CreateWindow( "Peter was here!!", SDL_WINDOWPOS_UNDEFINED,
-			 SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		globalwindow = SDL_CreateWindow( "hiker!!", SDL_WINDOWPOS_UNDEFINED,
+			 SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0 );
 		if( globalwindow == NULL )
 		{
 			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -84,19 +89,23 @@ int initSDL2()
 		while(i < r)
 		{
 			if ( SDL_GetRenderDriverInfo(i,&info) == 0 ) {
-				printf("driver name = %s\n",info.name);
-				printf("driver flags = %d\n", info.flags);
-				printf("num texture formats = %d\n", info.num_texture_formats);
+				printf("  render driver %d = %s ", i, info.name);
+				printf("    flags(hex) = %x\n", info.flags);
+				printf("    num texture formats = %d\n",
+								 info.num_texture_formats);
+				printf("    texture max width, height = %d, %d\n",
+						info.max_texture_width, info.max_texture_height); 
 			}
 			i++;
 		}
 
-		/* set hint for different path in SDL_render.c - see SDL2sources */
+		/* set hintS for different path in SDL_render.c - see SDL2sources */
 		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+		SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, 0);
 
-	
-		/* initialize renderer */
-		globalrenderer = SDL_CreateRenderer( globalwindow, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
+
+		/* initialize renderer FORCE A RENDERER TO DEBUG*/
+		globalrenderer = SDL_CreateRenderer( globalwindow, -1, 0);
 		if( globalrenderer == NULL )
 		{
 			printf( "Renderer could not be created! SDL Error: %s\n",
@@ -147,6 +156,7 @@ int initSDL2()
 
 	}
 
+	printf("SDL2init complete\n\n\n");
 	return(success);
 }
 

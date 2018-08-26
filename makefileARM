@@ -56,7 +56,7 @@ EXECUTABLE = bin/oz2imageARM
 # compiler and compiler flags to use 
 CC = $(CROSS_COMPILE)gcc
 CFLAGS +=  -I src/include/ --sysroot=$(SYSROOT_PATH)
-DEBUG = -g   # -g for gdb
+DEBUG = -g   # -g for gdb, -static for gdb 
  
 LDFLAGS += --sysroot=$(SYSROOT_PATH)
 LDFLAGS += -L $(SYSROOT_PATH)/usr/lib/

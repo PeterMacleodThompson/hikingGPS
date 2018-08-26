@@ -73,6 +73,8 @@ sudo cp -a $HOME/bbb2018/hikingGPS   /media/peter/rootfs/root/
 
 
 
+
+
 for ARM make with sensors 
 -------------------------
  change the following program in ~/...hikingGPS/src/ozdisplay:
