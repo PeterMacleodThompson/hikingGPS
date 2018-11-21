@@ -1,0 +1,154 @@
+{{- $architecture := or .architecture "armhf" -}}
+{{- $suite := or .suite "sid" -}}
+{{- $machine := or .machine "boneblack" -}}
+{{- $image := or .image (printf "debian-%s-oz2-%s-%s.img" $suite $machine $architecture) -}}
+
+architecture: {{ $architecture }}
+
+actions:
+  - action: debootstrap
+    suite: {{ $suite }}
+    components:
+      - main
+    mirror: http://deb.debian.org/debian
+    variant: minbase
+
+  - action: apt
+    packages:
+      - apt-transport-https
+      - ca-certificates
+
+  - action: overlay
+    source: overlays/base
+
+  - action: run
+    chroot: true
+    command: apt-get update
+
+  - action: apt
+    packages:
+      - acl
+      - dracut
+      - libnss-myhostname
+      - locales
+      - u-boot-omap
+      - u-boot-menu
+      - openssh-server
+      - sudo
+      - vim-tiny
+      - less
+      - weston
+      - dbus-user-session
+      - systemd-sysv
+      - net-tools
+      - vim-tiny
+      - iproute2
+
+  - action: apt
+    description: Install development packages
+    packages:
+      - build-essential
+      - git
+      - meson
+
+  - action: apt
+    description: Install oz2 required packages
+    packages:
+      - libsdl2-2.0-0
+      - libsdl2-gfx-1.0-0
+      - libsdl2-image-2.0-0
+      - libsdl2-ttf-2.0-0
+
+  - action: apt
+    description: Install oz2 required packages (development)
+    packages:
+      - libsdl2-dev
+      - libsdl2-gfx-dev
+      - libsdl2-image-dev
+      - libsdl2-ttf-dev
+
+  - action: overlay
+    source: binaries
+
+  # Install the kernel after everything else such that generation of the
+  # initramfs only gets triggered once
+  - action: run
+    description: Install the kernel (custom package)
+    chroot: true
+    command: dpkg -i /root/linux-image-4.18.13-oz2_4.18.13-1_armhf.deb
+
+  - action: run
+    chroot: true
+    script: scripts/setup-user.sh
+
+  - action: run
+    description: Add debian user to the video group
+    chroot: true
+    command: adduser debian video
+
+  - action: run
+    description: Set hostname
+    chroot: true
+    command: echo oz2 > /etc/hostname
+
+  - action: overlay
+    description: Log automatically on the serial console
+    source: overlays/auto-login
+
+  - action: overlay
+    description: Log automatically on the serial console
+    source: overlays/auto-login
+
+  - action: overlay
+    description: Add network configuration
+    source: overlays/networkd
+
+  - action: run
+    description: Setup networking
+    chroot: true
+    script: scripts/setup-networking.sh
+  
+  - action: run
+    description: Setting up base bootloader configuration (Workaround)
+    chroot: false
+    script: scripts/setup-extlinux.sh
+
+  - action: image-partition
+    imagename: {{ $image }}
+    imagesize: 12G
+    partitiontype: gpt
+    mountpoints:
+      - mountpoint: /
+        partition: root
+        flags: [ boot ]
+    partitions:
+      - name: root
+        fs: ext4
+        start: 8MB
+        end: 100%
+
+  - action: filesystem-deploy
+    description: Deploying filesystem onto image
+
+  - action: raw
+    description: Flash MLO
+    origin: filesystem
+    offset: {{ sector 256 }}
+    source: /usr/lib/u-boot/am335x_{{ $machine }}/MLO
+
+  - action: raw
+    description: Flash u-boot
+    origin: filesystem
+    offset: {{ sector 768 }}
+    source: /usr/lib/u-boot/am335x_{{ $machine }}/u-boot.img
+
+  - action: run
+    description: Create bmap file
+    postprocess: true
+    command: bmaptool create {{ $image }} > {{ $image }}.bmap
+
+  - action: run
+    description: Compress image
+    postprocess: true
+    command: gzip -f {{ $image }}
+
