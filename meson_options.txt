@@ -1,0 +1,5 @@
+option('with-sensors',
+       type : 'combo',
+       value : 'auto',
+       choices : ['auto', 'true', 'false'],
+       description : 'Build with support for sensors')
