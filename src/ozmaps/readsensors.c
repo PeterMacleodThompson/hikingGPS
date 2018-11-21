@@ -18,9 +18,11 @@ There are 2 functions:
 #include <sys/mman.h>
 
 /* from daemon2016 */
+#if HAVE_SENSORS
 #include "/home/peter/Documents/daemons2016/pmtgpsd/src/include/pmtgps.h" 
 #include "/home/peter/Documents/daemons2016/pmtfxosd/src/include/fxos8700.h"
 #include "/home/peter/Documents/daemons2016/pmtdiefaced/src/include/dieface.h"
+#endif
 
 
 
@@ -45,6 +47,7 @@ static struct PMTdieEvent 	*dienow;
 void initsensors()
 { 
 
+#if HAVE_SENSORS
    	int 		i;
     int 		fd1, fd2, fd3; // /tmp/pmtgpsd /tmp/pmtfxosd /tmp/pmtdieEvent 
 
@@ -96,6 +99,7 @@ void initsensors()
 	printf("gpsnow=%lld\n", (uint64_t)gpsnow->longitude * 1000000 
 			+ (uint64_t)gpsnow->latitude );
 */
+#endif
 }	
 
 
