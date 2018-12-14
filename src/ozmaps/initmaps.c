@@ -194,20 +194,3 @@ PMTmapset *initmaps(void) {
 
   return (mapsetPtr);
 }
-
-/**************************************************
-/* test routine to read and print file
-*****************************************************/
-#ifdef DEBUG
-
-main() {
-  PMTmapset *mapsetPtr;
-
-  int i;
-
-  mapsetPtr = initmaps();
-
-  closemaps(mapsetPtr);
-}
-
-#endif

@@ -195,14 +195,3 @@ int scalepoint(SDL_Rect *camera, SDL_Point *gpspt, SDL_Point *screenpt) {
 
   return (TRUE);
 }
-
-#ifdef DEBUG
-main() {
-
-  double angle;
-
-  angle = getangle(49, 378, 50, 380);
-
-  printf("angle = %f\n", angle);
-}
-#endif
