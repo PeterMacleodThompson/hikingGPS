@@ -115,9 +115,9 @@ typedef struct PMTmapset {
 
 /* there are 3 function prototypes used by display
 PMTmapset* 		initmaps();
-SDL_Surface* 	getmap(int, PMTmapset*);	/* returns mapSurface based on
+SDL_Surface* 	getmap(int, PMTmapset*);	// returns mapSurface based on
 int mapflags
-SDL_Point*		placegps(SDL_Surface*); 	/* returns point on
+SDL_Point*		placegps(SDL_Surface*); 	// returns point on
 SDL_Surface for gps
 */
 
