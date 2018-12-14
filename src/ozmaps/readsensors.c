@@ -34,9 +34,11 @@ There are 2 functions:
 #define FALSE 0
 
 /* shared memory structures - global to this program */
+#if HAVE_SENSORS
 static struct PMTgps *gpsnow;
 static struct PMTfxos8700 *fxosnow;
 static struct PMTdieEvent *dienow;
+#endif
 
 /****************   initialize sensors **************************/
 void initsensors() {
