@@ -15,3 +15,5 @@ clean: build/build.ninja
 reconfigure: build/build.ninja
 	ninja -C build reconfigure
 
+install: build/build.ninja
+	ninja -C build install

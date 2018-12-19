@@ -30,6 +30,6 @@ src = ['ozdisplay/displaymap.c',
        'ozmaps/readsensors.c'
 ]
 
-executable('oz2image', src,
+executable('oz2', src,
 	dependencies : [libm, libsdl2, libsdl2_image, libsdl2_gfx, libsdl2_ttf],
-	include_directories : incdir)
+	include_directories : incdir, install : true)

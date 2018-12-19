@@ -36,3 +36,8 @@ Once you've run the initial meson command successfully you can use your configur
 $ ninja -C build/
 ```
 
+The default install target (executed via, e.g., ninja install) does installing with reasonable default options. Sometimes you need to install to a different directory than the install prefix. This is most common when building rpm or deb packages. This is done with the DESTDIR environment variable and it is used just like with other build systems:
+
+```sh
+$ DESTDIR=/path/to/staging/area ninja -C build/ install
+```
