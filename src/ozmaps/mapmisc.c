@@ -110,7 +110,7 @@ int gpstogpskey(uint64_t gps) {
   gpskey = longdd * 1000000 + longmm * 10000 + latdd * 100 + latmm;
 
 #ifdef DEBUG
-  printf("gps = %llu\n", gps);
+  printf("gps = %lu\n", gps);
   printf("gpskey(dddmmddmm) = %d\n", gpskey);
 #endif
 
@@ -181,7 +181,7 @@ PMTmapindex *findgpsmap(uint64_t gps, PMTmapset *mapsetNow) {
     else if (gpskey > mid->mapkey)
       low = mid + 1;
     else {
-      printf("Bin Srch Found GPS map %s mapkey %d mapset %d %s GPS %llu\n",
+      printf("Bin Srch Found GPS map %s mapkey %d mapset %d %s GPS %lu\n",
              mid->mapname, mid->mapkey, mapsetNow->sequence, mapsetNow->name,
              gps);
       return (mid); /* found */
@@ -204,7 +204,7 @@ PMTmapindex *findgpsmap(uint64_t gps, PMTmapset *mapsetNow) {
   // match
   while (low <= high) {
     if (inthemap(gpskey, low)) {
-      printf("Lin Srch Found GPS map %s mapkey %d mapset %d %s GPS %llu\n",
+      printf("Lin Srch Found GPS map %s mapkey %d mapset %d %s GPS %lu\n",
              low->mapname, low->mapkey, mapsetNow->sequence, mapsetNow->name,
              gps);
       return (low); /*found*/
@@ -212,7 +212,7 @@ PMTmapindex *findgpsmap(uint64_t gps, PMTmapset *mapsetNow) {
     low++;
   }
   // not found return NULL
-  printf("NOT Found GPS map: mapset %d %s GPS %llu\n", mapsetNow->sequence,
+  printf("NOT Found GPS map: mapset %d %s GPS %lu\n", mapsetNow->sequence,
          mapsetNow->name, gps);
   return (NULL);
 }
