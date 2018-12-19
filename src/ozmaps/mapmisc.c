@@ -201,7 +201,7 @@ SDL_Point *gpstopixel(PMTmapindex *mapindexNow, SDL_Surface *mapNow,
 /************ gps to pixel for each of x and y ***********/
 
 int gpstoypixel(int mapkey, float ypps, uint64_t gps) {
-  int y, totseconds, temp;
+  int y, temp;
   int gpsdegrees, gpsminutes, gpsseconds;
   int latdegrees, latminutes;
   int ssgps, sskey;
@@ -225,13 +225,9 @@ int gpstoypixel(int mapkey, float ypps, uint64_t gps) {
 }
 
 int gpstoxpixel(int mapkey, float xpps, uint64_t gps) {
-  int i, j, k, l;
-  int x, y, temp;
+  int x, temp;
   int gpsdegrees, gpsminutes, gpsseconds;
   int sslong, sskey;
-  float toppps, botpps, gpspps, ratio; // latitude in decimal degrees
-  int centerddmm, centerpixel; // centerline of mapmatrix surface ddmm, pixels
-  int gpsdelta;
 
   // convert gps format dddmmssddmmss to longitude seconds
   temp = gps / 1000000;
