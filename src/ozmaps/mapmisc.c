@@ -89,6 +89,70 @@ PMTmapindex *findmapkey(int mapkey, PMTmapset *mapsetNow,
   return (NULL); /* not found */
 }
 
+/*********************   gpstogpskey( gps ) ********************/
+
+int gpstogpskey(uint64_t gps) {
+  int longdd, longmm, longss, latdd, latmm, latss; // gps in longlat components
+  int gpskey;
+
+  // convert gps into dddmmddmm format
+  longdd = gps / 10000000000;
+  longmm = (gps / 100000000) % 100;
+  longss = (gps / 1000000) % 100;
+  latdd = (gps % 1000000) / 10000;
+  latmm = (gps % 10000) / 100;
+  latss = gps % 100;
+
+  if (longss > 0)
+    longmm++;
+  if (latss > 0)
+    latmm++;
+  gpskey = longdd * 1000000 + longmm * 10000 + latdd * 100 + latmm;
+
+#ifdef DEBUG
+  printf("gps = %llu\n", gps);
+  printf("gpskey(dddmmddmm) = %d\n", gpskey);
+#endif
+
+  return (gpskey);
+}
+
+/***********    keysubtract ( mapkey x, mapkey y )      ********************/
+/* returns (x - y) where x, y, and returned value are all mapkey format: ddmm
+ * d=degrees, m=minutes */
+
+int keysubtract(int x, int y) {
+  int xdd, xmm, ydd, ymm, zdd, zmm;
+
+  xdd = x / 100;
+  xmm = x % 100;
+  ydd = y / 100;
+  ymm = y % 100;
+  zmm = xmm - ymm;
+  if (zmm < 0) {
+    xdd--;
+    zmm = (xmm + 60) - ymm;
+  }
+  zdd = xdd - ydd;
+  if (zdd >= 0)
+    return (zdd * 100 + zmm);
+  else
+    return (0);
+}
+
+/************  inthemap( key, map) checks if key is in the map **********/
+
+int inthemap(int gpskey, PMTmapindex *map) {
+
+  if (gpskey / 10000 <= map->mapkey / 10000 &&
+      gpskey / 10000 >= keysubtract(map->mapkey / 10000, map->mapwidth) &&
+      gpskey % 10000 <= map->mapkey % 10000 &&
+      gpskey % 10000 >= keysubtract(map->mapkey % 10000, map->mapheight))
+    return (TRUE);
+  else
+    return (FALSE);
+}
+
 /*******  PMTmapindex* findgpsmap( uint64_t gps, PMTmapset mapsetNow )
 ************ Given
         - current mapset ie mapsetNow
@@ -265,19 +329,6 @@ int seconds(int ddmm) {
   return (seconds);
 }
 
-/************  inthemap( key, map) checks if key is in the map **********/
-
-int inthemap(int gpskey, PMTmapindex *map) {
-
-  if (gpskey / 10000 <= map->mapkey / 10000 &&
-      gpskey / 10000 >= keysubtract(map->mapkey / 10000, map->mapwidth) &&
-      gpskey % 10000 <= map->mapkey % 10000 &&
-      gpskey % 10000 >= keysubtract(map->mapkey % 10000, map->mapheight))
-    return (TRUE);
-  else
-    return (FALSE);
-}
-
 /***********    keyadd( mapkey x, mapkey y )      ********************/
 /* returns (x + y) where x, y, and returned value are all mapkey format: ddmm
  * d=degrees, m=minutes */
@@ -296,57 +347,6 @@ int keyadd(int x, int y) {
   }
   zdd = xdd + ydd;
   return (zdd * 100 + zmm);
-}
-
-/***********    keysubtract ( mapkey x, mapkey y )      ********************/
-/* returns (x - y) where x, y, and returned value are all mapkey format: ddmm
- * d=degrees, m=minutes */
-
-int keysubtract(int x, int y) {
-  int xdd, xmm, ydd, ymm, zdd, zmm;
-
-  xdd = x / 100;
-  xmm = x % 100;
-  ydd = y / 100;
-  ymm = y % 100;
-  zmm = xmm - ymm;
-  if (zmm < 0) {
-    xdd--;
-    zmm = (xmm + 60) - ymm;
-  }
-  zdd = xdd - ydd;
-  if (zdd >= 0)
-    return (zdd * 100 + zmm);
-  else
-    return (0);
-}
-
-/*********************   gpstogpskey( gps ) ********************/
-
-int gpstogpskey(uint64_t gps) {
-  int longdd, longmm, longss, latdd, latmm, latss; // gps in longlat components
-  int gpskey;
-
-  // convert gps into dddmmddmm format
-  longdd = gps / 10000000000;
-  longmm = (gps / 100000000) % 100;
-  longss = (gps / 1000000) % 100;
-  latdd = (gps % 1000000) / 10000;
-  latmm = (gps % 10000) / 100;
-  latss = gps % 100;
-
-  if (longss > 0)
-    longmm++;
-  if (latss > 0)
-    latmm++;
-  gpskey = longdd * 1000000 + longmm * 10000 + latdd * 100 + latmm;
-
-#ifdef DEBUG
-  printf("gps = %llu\n", gps);
-  printf("gpskey(dddmmddmm) = %d\n", gpskey);
-#endif
-
-  return (gpskey);
 }
 
 /*************** pixeltogps()  ****************************/
