@@ -8,6 +8,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <limits.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -158,9 +159,10 @@ PMTmapindex *findgpsmap(uint64_t gps, PMTmapset *mapsetNow) {
 SDL_Surface *loadmap(PMTmapset *mapsetNow, PMTmapindex *mapindexNow,
                      SDL_Surface *mapOld) {
   SDL_Surface *mapNow;
-  char filename[100];
+  char filename[PATH_MAX];
 
-  strcpy(filename, MAPSPATH);
+  strcpy(filename, datapath);
+  strcat(filename, "maps/");
   strcat(filename, mapsetNow->name);
   strcat(filename, "/");
   strcat(filename, (mapindexNow->mapname));

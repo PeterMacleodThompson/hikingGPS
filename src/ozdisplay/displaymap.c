@@ -24,6 +24,7 @@ END FIXME
 */
 
 #include "../include/maps.h" /* for mapflags only */
+#include <limits.h>
 #include "SDL2/SDL2_gfxPrimitives.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -75,6 +76,36 @@ int scalepoint(SDL_Rect *, SDL_Point *, SDL_Point *);
 PMTmapset *initmaps(void);
 SDL_Surface *getmap(int, PMTmapset *, SDL_Rect *);
 SDL_Point *placegps(SDL_Surface *mymap);
+
+char *datapath = NULL;
+
+/* Try to find datadir relative to the executable path */
+static char *find_datadir() {
+    char *base_path;
+    size_t length;
+
+    base_path = SDL_GetBasePath();
+    if (base_path) {
+        /* We replace the last bin/ with share/oz2 to get the the resource path */
+        length = SDL_strlen(base_path);
+        printf("*** base_path: %s\n", base_path);
+        if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
+          SDL_realloc(base_path, length - 4 + SDL_strlen("share/oz2/") + 1);
+          SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
+          printf("*** base_path: %s\n", base_path);
+          return base_path;
+        } else {
+          SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find a valid base path: %s\n",
+                       base_path);
+          SDL_free(base_path);
+        }
+    } else {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
+                   SDL_GetError());
+    }
+    /* An error happened */
+    return NULL;
+}
 
 main() {
   SDL_Surface *mymap; /*mymap= active map on screen */
@@ -135,7 +166,7 @@ main() {
 
   int centerFmsecs, mapmsecs; // timers in milliseconds
   Uint8 alphabutton;          // alpha fading for buttons
-  char filename[100];
+  char filename[PATH_MAX];
 
   Uint64 gps;
   int mymapindex; /* %100 = mapsetindex, /100 = mapindex within mapset*/
@@ -145,13 +176,19 @@ main() {
   /* initialize SDL, get spritesheets */
   if (!initSDL2())
     exit(0);
-  strcpy(filename, IMAGEPATH);
-  strcat(filename, "styxwalkerR.png");
+
+  /* Try to find the images and maps resources path */
+  datapath = find_datadir();
+  if (!datapath)
+    exit(0);
+
+  strcpy(filename, datapath);
+  strcat(filename, "images/styxwalkerR.png");
   // strcat( filename, "questionmark.png" );
   if ((spritesheet = getsprite(filename)) == NULL)
     exit(0);
-  strcpy(filename, IMAGEPATH);
-  strcat(filename, "buttonsheet.png");
+  strcpy(filename, datapath);
+  strcat(filename, "images/buttonsheet.png");
   if ((buttonsheet = getsprite(filename)) == NULL)
     exit(0);
 
@@ -178,16 +215,16 @@ main() {
   screenmap = SDL_GetWindowSurface(globalwindow);
 
   // get background textures for screen
-  strcpy(filename, IMAGEPATH);
-  strcat(filename, "circle1.png");
+  strcpy(filename, datapath);
+  strcat(filename, "images/circle1.png");
   blackcircle = gettexture(filename);
 
-  strcpy(filename, IMAGEPATH);
-  strcat(filename, "ring3.png");
+  strcpy(filename, datapath);
+  strcat(filename, "images/ring3.png");
   greenring = gettexture(filename);
 
-  strcpy(filename, IMAGEPATH);
-  strcat(filename, "ringN.png");
+  strcpy(filename, datapath);
+  strcat(filename, "images/ringN.png");
   pleaseorient = gettexture(filename);
 
   /* SDL BUG:: FIXME ALPHA + SDL_RenderCopyEx() below causes greenring to

@@ -101,8 +101,6 @@ typedef struct PMTmapset {
   PMTmapindex *mapindexPtr; // NOT in file - pointer to mapcount records
 } PMTmapset;
 
-#define IMAGEPATH "../images/"
-#define MAPSPATH "../maps/"
 #define MAXMAPSETS 10
 /* mapflags */
 #define GPSMAP 0           /* mapflags=0 ==> get map containing gps */
@@ -112,6 +110,8 @@ typedef struct PMTmapset {
 #define movemapEF 0x0008
 #define movemapNF 0x0010
 #define movemapSF 0x0020
+
+extern char *datapath;
 
 /* there are 3 function prototypes used by display
 PMTmapset* 		initmaps();

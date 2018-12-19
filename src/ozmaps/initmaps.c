@@ -11,6 +11,7 @@
 // #define DEBUG
 
 #include "../include/maps.h"
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,7 @@ PMTmapset *mapsetInit(int mapsetcount) {
 
   FILE *fp;
   FILE *fp2;
-  char filename[100], filename2[100], inbuf[400];
+  char filename[PATH_MAX], filename2[PATH_MAX], inbuf[400];
   int i;
 
   /* malloc mapset array */
@@ -37,8 +38,8 @@ PMTmapset *mapsetInit(int mapsetcount) {
   }
 
   // open mapset file
-  strcpy(filename, MAPSPATH);
-  strcat(filename, "mapset");
+  strcpy(filename, datapath);
+  strcat(filename, "maps/mapset");
   if ((fp = fopen(filename, "r")) == NULL) {
     printf("ERROR mapsetInit:: unable to open %s \n", filename);
     exit(EXIT_FAILURE);
@@ -52,7 +53,8 @@ PMTmapset *mapsetInit(int mapsetcount) {
     sscanf(inbuf, "%s %s %d %d", (mapsetPtr + i)->name, (mapsetPtr + i)->usage,
            &(mapsetPtr + i)->Kscale, &(mapsetPtr + i)->mapcount);
     /* validate directory and containes a mapindex file */
-    strcpy(filename2, MAPSPATH);
+    strcpy(filename2, datapath);
+    strcat(filename2, "maps/");
     strcat(filename2, (mapsetPtr + i)->name);
     strcat(filename2, "/mapindex");
     if ((fp2 = fopen(filename2, "r")) == NULL) {
@@ -78,12 +80,12 @@ PMTmapset *mapsetInit(int mapsetcount) {
 
 int openmapset() {
   FILE *fp;
-  char filename[100], inbuf[400];
+  char filename[PATH_MAX], inbuf[400];
   int i;
 
   // open mapset file
-  strcpy(filename, MAPSPATH);
-  strcat(filename, "mapset");
+  strcpy(filename, datapath);
+  strcat(filename, "maps/mapset");
   if ((fp = fopen(filename, "r")) == NULL) {
     printf("ERROR mapsetInit:: unable to open %s \n", filename);
     exit(EXIT_FAILURE);
@@ -110,7 +112,7 @@ for each record in PMTmapset:
 
 void mapindexInit(PMTmapset mapset[], int mapsetcount) {
   struct PMTmapindex *p;
-  char mapindexFilename[50], mapFilename[50];
+  char mapindexFilename[PATH_MAX], mapFilename[PATH_MAX];
   char inbuf[400];
   int i, j, mapkey, mapwidth, mapheight, flagMapindex = 0;
   int lat;
@@ -119,7 +121,8 @@ void mapindexInit(PMTmapset mapset[], int mapsetcount) {
   for (i = 0; i < mapsetcount; i++) // for each mapset
   {
     // open the mapindex file associated with the next mapset record
-    strcpy(mapindexFilename, MAPSPATH);
+    strcpy(mapindexFilename, datapath);
+    strcat(mapindexFilename, "maps/");
     strcat(mapindexFilename, mapset[i].name); // folder-name containing maps
     strcat(mapindexFilename, "/mapindex");    // filename always "mapindex"
 
