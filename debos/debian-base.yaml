@@ -1,7 +1,6 @@
-{{- $architecture := or .architecture "armhf" -}}
-{{- $suite := or .suite "sid" -}}
-{{- $machine := or .machine "boneblack" -}}
-{{- $image := or .image (printf "debian-%s-oz2-%s-%s.img" $suite $machine $architecture) -}}
+{{- $suite := or .suite "stretch" -}}
+{{- $architecture := or .architecture "amd64" -}}
+{{- $ospack := or .ospack (printf "debian-base-%s-%s" $suite $architecture) -}}
 
 architecture: {{ $architecture }}
 
@@ -10,7 +9,7 @@ actions:
     suite: {{ $suite }}
     components:
       - main
-    mirror: http://deb.debian.org/debian
+    mirror: https://deb.debian.org/debian
     variant: minbase
 
   - action: apt
@@ -31,8 +30,6 @@ actions:
       - dracut
       - libnss-myhostname
       - locales
-      - u-boot-omap
-      - u-boot-menu
       - openssh-server
       - sudo
       - vim-tiny
@@ -43,6 +40,7 @@ actions:
       - net-tools
       - vim-tiny
       - iproute2
+      - udev
 
   - action: apt
     description: Install development packages
@@ -67,16 +65,6 @@ actions:
       - libsdl2-image-dev
       - libsdl2-ttf-dev
 
-  - action: overlay
-    source: binaries
-
-  # Install the kernel after everything else such that generation of the
-  # initramfs only gets triggered once
-  - action: run
-    description: Install the kernel (custom package)
-    chroot: true
-    command: dpkg -i /root/linux-image-4.18.13-oz2_4.18.13-1_armhf.deb
-
   - action: run
     chroot: true
     script: scripts/setup-user.sh
@@ -89,7 +77,7 @@ actions:
   - action: run
     description: Set hostname
     chroot: true
-    command: echo oz2 > /etc/hostname
+    command: echo debian > /etc/hostname
 
   - action: overlay
     description: Log automatically on the serial console
@@ -107,48 +95,11 @@ actions:
     description: Setup networking
     chroot: true
     script: scripts/setup-networking.sh
-  
-  - action: run
-    description: Setting up base bootloader configuration (Workaround)
-    chroot: false
-    script: scripts/setup-extlinux.sh
-
-  - action: image-partition.img
-    imagename: {{ $image }}
-    imagesize: 12G
-    partitiontype: gpt
-    mountpoints:
-      - mountpoint: /
-        partition: root
-        flags: [ boot ]
-    partitions:
-      - name: root
-        fs: ext4
-        start: 8MB
-        end: 100%
-
-  - action: filesystem-deploy
-    description: Deploying filesystem onto image
-
-  - action: raw
-    description: Flash MLO
-    origin: filesystem
-    offset: {{ sector 256 }}
-    source: /usr/lib/u-boot/am335x_{{ $machine }}/MLO
-
-  - action: raw
-    description: Flash u-boot
-    origin: filesystem
-    offset: {{ sector 768 }}
-    source: /usr/lib/u-boot/am335x_{{ $machine }}/u-boot.img
 
   - action: run
-    description: Create bmap file
-    postprocess: true
-    command: bmaptool create {{ $image }} > {{ $image }}.bmap
+    chroot: true
+    command: systemctl enable systemd-networkd systemd-resolved weston
 
-  - action: run
-    description: Compress image
-    postprocess: true
-    command: gzip -f {{ $image }}
+  - action: pack
+    file: {{ $ospack }}.tar.gz
 

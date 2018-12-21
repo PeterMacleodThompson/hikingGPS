@@ -13,6 +13,33 @@ $ export GOPATH=`pwd`/gocode
 $ go get -u github.com/go-debos/debos/cmd/debos
 ```
 
+# Build an image and run it in the QEMU emulator.
+
+First, make sure you have KVM installed:
+
+```sh
+$ sudo apt install qemu-kvm ovmf
+```
+
+Now that that’s done, let’s create the images, run:
+
+```sh
+$GOPATH/bin/debos -t suite:sid debos/debian-base.yaml
+$GOPATH/bin/debos -t suite:sid debos/debian-uefi.yaml
+```
+
+Will create the following output:
+
+- debian-base-sid-amd64.tar.gz, a tarball with the debian base filesystem.
+- debian-uefi-image-sid-amd64.img, an image file for QEMU emulator.
+- debian-uefi-image-sid-amd64.vdi, a VirtualBox image.
+
+The final command runs the image using the QEMU emulator:
+
+```sh
+$ scripts/qemu-boot-efi debian-uefi-image-sid-amd64.img
+```
+
 # USAGE
 
 Example run:
