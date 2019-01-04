@@ -97,8 +97,9 @@ actions:
     script: scripts/setup-networking.sh
 
   - action: run
+    description: Setup wayland compositor
     chroot: true
-    command: systemctl enable systemd-networkd systemd-resolved weston
+    command: systemctl enable weston
 
   - action: pack
     file: {{ $ospack }}.tar.gz
