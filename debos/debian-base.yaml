@@ -101,6 +101,11 @@ actions:
     chroot: true
     command: systemctl enable weston
 
+  - action: run
+    description: Install the hikingGPS app
+    chroot: true
+    script: scripts/install-app.sh
+
   - action: pack
     file: {{ $ospack }}.tar.gz
 
