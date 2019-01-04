@@ -31,13 +31,13 @@ $GOPATH/bin/debos -t suite:sid debos/debian-uefi.yaml
 Will create the following output:
 
 - debian-base-sid-amd64.tar.gz, a tarball with the debian base filesystem.
-- debian-uefi-image-sid-amd64.img, an image file for QEMU emulator.
-- debian-uefi-image-sid-amd64.vdi, a VirtualBox image.
+- debian-uefi-sid-amd64.img, an image file for QEMU emulator.
+- debian-uefi-sid-amd64.vdi, a VirtualBox image.
 
 The final command runs the image using the QEMU emulator:
 
 ```sh
-$ scripts/qemu-boot-efi debian-uefi-image-sid-amd64.img
+$ scripts/qemu-boot-efi debian-uefi-sid-amd64.img
 ```
 
 # Build an image and flash it into the Beaglebone Black.
