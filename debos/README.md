@@ -40,23 +40,26 @@ The final command runs the image using the QEMU emulator:
 $ scripts/qemu-boot-efi debian-uefi-image-sid-amd64.img
 ```
 
-# USAGE
+# Build an image and flash it into the Beaglebone Black.
 
-Example run:
+To create the images, run:
 
+```sh
+$GOPATH/bin/debos -t suite:sid debos/debian-base.yaml
+$GOPATH/bin/debos -t suite:sid debos/debian-boneblack.yaml
 ```
-$GOPATH/bin/debos debos/debimage.yaml
-```
 
-will create two outputs:
+Will create the following output:
 
-- debian-sid-oz2-boneblack-armhf.img.gz, a gz-compressed image file for a Beaglebone Black board.
-- debian-sid-oz2-boneblack-armhf.img.bmap, a bitmap summary for faster flashing via bmaptools
+- debian-base-sid-armhf.tar.gz, a tarball with the debian base filesystem.
+- debian-boneblack-sid-armhf.img.gz, a gz-compressed image file for a Beaglebone Black board.
+- debian-boneblack-sid-armhf.img.gz.md5, the image checksum.
+- debian-boneblack-sid-armhf.img.bmap, a bitmap summary for faster flashing via bmaptools.
 
 To flash it, assuming your SD card is /dev/mmcblk0, use:
 
 ```
-bmaptool copy debian-sid-oz2-boneblack-armhf.img.gz /dev/mmcblk0
+bmaptool copy debian-boneblack-sid-armhf.img.gz /dev/mmcblk0
 ```
 
 The bmap file is automatically looked for in the current directory.

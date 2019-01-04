@@ -1,0 +1,75 @@
+{{- $suite := or .suite "stretch" -}}
+{{- $architecture := or .architecture "armhf" -}}
+{{- $machine := or .machine "boneblack" -}}
+{{- $ospack := or .ospack (printf "debian-base-%s-%s" $suite $architecture) -}}
+{{- $image := or .image (printf "debian-%s-%s-%s" $machine $suite $architecture) -}}
+
+architecture: {{ $architecture }}
+
+actions:
+  - action: unpack
+    file: {{ $ospack }}.tar.gz
+
+  - action: download
+    url: https://docs.google.com/uc?export=download&id=1_SKTl0M4I0dfH5x5mv8Mnaj-R44c40fE
+    name: linux-image-armhf
+    filename: linux-image-4.18.13-oz2_4.18.13-1_armhf.deb
+
+  - action: image-partition
+    imagename: {{ $image }}.img
+    imagesize: 4G
+    partitiontype: gpt
+    mountpoints:
+      - mountpoint: /
+        partition: root
+        flags: [ boot ]
+    partitions:
+      - name: root
+        fs: ext4
+        start: 8MB
+        end: 100%
+
+  - action: filesystem-deploy
+
+  - action: apt
+    packages:
+      - u-boot-omap
+      - u-boot-menu
+
+  - action: overlay
+    origin: linux-image-armhf
+    destination: /root/linux-image-4.18.13-oz2_4.18.13-1_armhf.deb
+
+  # Install the kernel after everything else such that generation of the
+  # initramfs only gets triggered once
+  - action: run
+    description: Install the kernel (custom package)
+    chroot: true
+    command: dpkg -i /root/linux-image-4.18.13-oz2_4.18.13-1_armhf.deb
+
+  - action: raw
+    description: Flash MLO
+    origin: filesystem
+    offset: {{ sector 256 }}
+    source: /usr/lib/u-boot/am335x_{{ $machine }}/MLO
+
+  - action: raw
+    description: Flash u-boot
+    origin: filesystem
+    offset: {{ sector 768 }}
+    source: /usr/lib/u-boot/am335x_{{ $machine }}/u-boot.img
+
+  - action: run
+    description: Create bmap file
+    postprocess: true
+    command: bmaptool create {{ $image }}.img > {{ $image }}.img.bmap
+
+  - action: run
+    description: Compress {{ $image }}.img
+    postprocess: true
+    command: gzip -f {{ $image }}.img
+
+  - action: run
+    description: Checksum for {{ $image }}.img.gz
+    postprocess: true
+    command: md5sum {{ $image }}.img.gz > {{ $image }}.img.gz.md5
