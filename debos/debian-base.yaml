@@ -84,10 +84,6 @@ actions:
     source: overlays/auto-login
 
   - action: overlay
-    description: Log automatically on the serial console
-    source: overlays/auto-login
-
-  - action: overlay
     description: Add network configuration
     source: overlays/networkd
 
