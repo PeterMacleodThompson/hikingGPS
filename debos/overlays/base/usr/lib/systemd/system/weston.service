@@ -37,7 +37,7 @@ ConditionPathExists=/dev/tty0
 
 # Requires systemd-notify.so Weston plugin.
 Type=notify
-ExecStart=/usr/bin/weston --backend=fbdev-backend.so
+ExecStart=/usr/bin/weston --modules=systemd-notify.so --backend=fbdev-backend.so
 
 # Optional watchdog setup
 TimeoutStartSec=60
