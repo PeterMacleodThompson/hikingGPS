@@ -24,10 +24,10 @@ END FIXME
 */
 
 #include "../include/maps.h" /* for mapflags only */
-#include <limits.h>
 #include "SDL2/SDL2_gfxPrimitives.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <limits.h>
 #include <stdio.h>
 
 #define DEBUG
@@ -81,36 +81,37 @@ char *datapath = NULL;
 
 /* Try to find datadir relative to the executable path */
 static char *find_datadir() {
-    char *base_path;
-    size_t length;
+  char *base_path;
+  size_t length;
 
-    base_path = SDL_GetBasePath();
-    if (base_path) {
-        /* We replace the last bin/ with share/oz2 to get the the resource path */
-        length = SDL_strlen(base_path);
-        if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
-          char *path = (char *)SDL_realloc(base_path, length + SDL_strlen("share/oz2/") + 1);
-          if ( path == NULL) {
-           SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't realloc memory for base path: %s\n",
-                        base_path);
-            SDL_free(base_path);
-            return NULL;
-	  }
+  base_path = SDL_GetBasePath();
+  if (base_path) {
+    /* We replace the last bin/ with share/oz2 to get the the resource path */
+    length = SDL_strlen(base_path);
+    if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
+      char *path =
+          (char *)SDL_realloc(base_path, length + SDL_strlen("share/oz2/") + 1);
+      if (path == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Couldn't realloc memory for base path: %s\n", base_path);
+        SDL_free(base_path);
+        return NULL;
+      }
 
-          base_path = path;
-          SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
-          return base_path;
-        } else {
-          SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find a valid base path: %s\n",
-                       base_path);
-          SDL_free(base_path);
-        }
+      base_path = path;
+      SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
+      return base_path;
     } else {
-      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
-                   SDL_GetError());
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Couldn't find a valid base path: %s\n", base_path);
+      SDL_free(base_path);
     }
-    /* An error happened */
-    return NULL;
+  } else {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
+                 SDL_GetError());
+  }
+  /* An error happened */
+  return NULL;
 }
 
 main() {

@@ -35,10 +35,11 @@ display
 /*	- there is no way around these 3 amigos + = semi-global variables
  */
 
-// static PMTmapset* 		mapsetNow; 		/* points to current mapset
-// in use */
+// static PMTmapset* 		mapsetNow; 		/* points to current
+// mapset in use */
 static PMTmapindex *mapindexNow; /* points to current map in use */
-// static SDL_Surface*		mapNow;			/* current map on display
+// static SDL_Surface*		mapNow;			/* current map on
+// display
 // */
 static int firsttime = TRUE; /* gps initialization flag */
 static PMTmapindex *homemapindex;
@@ -58,9 +59,9 @@ SDL_Surface *loadmap(PMTmapset *, PMTmapindex *, SDL_Surface *);
 //  #define DEBUG
 #ifdef DEBUG
 
+#include "SDL2/SDL2_gfxPrimitives.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "SDL2/SDL2_gfxPrimitives.h"
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 

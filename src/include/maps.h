@@ -91,11 +91,11 @@ typedef struct PMTmapindex { // key = top left (NorthWest) corner of map
 
 /*list of mapsets sorted by increasing kscale = order to be viewed */
 typedef struct PMTmapset {
-  int sequence;   // NOT in file - generated with bookends 0, 9999
-  char name[11];  // {CIMW C250k, C50k, Ctopo, Cphoto}
-                  // max 10 char + string terminator = 11
-  char usage[16]; // golf,marine, aeronautic, topograpic, satellite
-                  // max 15 char + string terminator = 16
+  int sequence;             // NOT in file - generated with bookends 0, 9999
+  char name[11];            // {CIMW C250k, C50k, Ctopo, Cphoto}
+                            // max 10 char + string terminator = 11
+  char usage[16];           // golf,marine, aeronautic, topograpic, satellite
+                            // max 15 char + string terminator = 16
   int Kscale;               // scale of mapset - 50 means 1:50,000 scale
   int mapcount;             // number of maps in mapset for *mapindexPtr
   PMTmapindex *mapindexPtr; // NOT in file - pointer to mapcount records
@@ -121,5 +121,6 @@ SDL_Point*		placegps(SDL_Surface*); 	// returns point on
 SDL_Surface for gps
 */
 
-/*				 int = GPSMAP = 0, returns the map containing gps
+/*				 int = GPSMAP = 0, returns the map containing
+ * gps
  */
