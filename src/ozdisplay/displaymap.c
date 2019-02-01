@@ -88,11 +88,17 @@ static char *find_datadir() {
     if (base_path) {
         /* We replace the last bin/ with share/oz2 to get the the resource path */
         length = SDL_strlen(base_path);
-        printf("*** base_path: %s\n", base_path);
         if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
-          SDL_realloc(base_path, length - 4 + SDL_strlen("share/oz2/") + 1);
+          char *path = (char *)SDL_realloc(base_path, length + SDL_strlen("share/oz2/") + 1);
+          if ( path == NULL) {
+           SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't realloc memory for base path: %s\n",
+                        base_path);
+            SDL_free(base_path);
+            return NULL;
+	  }
+
+          base_path = path;
           SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
-          printf("*** base_path: %s\n", base_path);
           return base_path;
         } else {
           SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find a valid base path: %s\n",
