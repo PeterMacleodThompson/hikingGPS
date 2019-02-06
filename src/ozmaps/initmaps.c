@@ -114,9 +114,7 @@ void mapindexInit(PMTmapset mapset[], int mapsetcount) {
   struct PMTmapindex *p;
   char mapindexFilename[PATH_MAX], mapFilename[PATH_MAX];
   char inbuf[400];
-  int i, j, mapkey, mapwidth, mapheight, flagMapindex = 0;
-  int lat;
-  float angle;
+  int i, j, mapkey, mapwidth, mapheight;
 
   for (i = 0; i < mapsetcount; i++) // for each mapset
   {
