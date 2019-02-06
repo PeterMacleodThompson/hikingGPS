@@ -8,8 +8,6 @@
 
 *************************************************************************/
 
-// #define DEBUG
-
 #include "../include/maps.h"
 #include <limits.h>
 #include <stdio.h>
