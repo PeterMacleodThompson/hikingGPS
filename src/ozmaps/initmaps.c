@@ -61,7 +61,7 @@ PMTmapset *mapsetInit(int mapsetcount) {
       printf("ERROR mapsetInit:: unable to open %s => ignored\n", filename2);
       continue; /* skip this record */
     }
-    close(fp2);
+    fclose(fp2);
     printf("mapset record %s %s %d %d \n", (mapsetPtr + i)->name,
            (mapsetPtr + i)->usage, (mapsetPtr + i)->Kscale,
            (mapsetPtr + i)->mapcount);
@@ -70,7 +70,7 @@ PMTmapset *mapsetInit(int mapsetcount) {
   }
   (mapsetPtr + i - 1)->sequence =
       9999; // closing bookend marking last mapset record
-  close(fp);
+  fclose(fp);
   return (mapsetPtr);
 }
 
@@ -97,7 +97,7 @@ int openmapset() {
     if (inbuf[0] != '#') // # first character = comment line = ignore
       i++;
   }
-  close(fp);
+  fclose(fp);
   printf("count of mapsets = %d \n", i);
   return (i); // return record count = mapsetcount
 }
