@@ -55,6 +55,10 @@ uint64_t pixeltogps(PMTmapindex *, SDL_Surface *, SDL_Rect *);
 PMTmapindex *findmapkey(int, PMTmapset *, PMTmapindex *);
 PMTmapindex *findgpsmap(uint64_t, PMTmapset *);
 SDL_Surface *loadmap(PMTmapset *, PMTmapindex *, SDL_Surface *);
+int keyadd(int, int);
+int keysubtract(int, int);
+int gpstogpskey(uint64_t);
+int inthemap(int, PMTmapindex *);
 
 //  #define DEBUG
 #ifdef DEBUG
