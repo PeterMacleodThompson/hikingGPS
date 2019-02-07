@@ -247,7 +247,8 @@ SDL_Surface *getmap(int mapflags,      /* instructions on which map to get */
       camera->y = 0;
       return (mapNow);
     }
-  }
+  } else
+    return (mapNow); /* should never reach here */
 }
 
 /********************** SDL_Point placegps(SDL_Surface) *******************/
