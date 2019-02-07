@@ -60,16 +60,6 @@ int keysubtract(int, int);
 int gpstogpskey(uint64_t);
 int inthemap(int, PMTmapindex *);
 
-//  #define DEBUG
-#ifdef DEBUG
-
-#include "SDL2/SDL2_gfxPrimitives.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#define SCREEN_WIDTH 500
-#define SCREEN_HEIGHT 500
-
-#endif
 
 /**********************   getmap ****************************************
         ALL map movement is handled in this routine.
