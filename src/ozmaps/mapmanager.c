@@ -1,22 +1,19 @@
 /*    mapmanager.c
         - compile with  gcc -g mapmanager.c initmaps.c mapmisc.c
    ../ozdisplay/SDL2init.c initgps.c -o ../../mapmanager -lSDL2 -lSDL2_image -lm
-
-
 */
 /* written Peter Thompson Sept 2015
    Designed to simplify the main game loop calls to 3 simple calls
 
-PMTmapset* 		initmaps();
+PMTmapset* 	initmaps();
 SDL_Surface* 	getmap(int, PMTmapset*);
-SDL_Point*		placegps(SDL_Surface*);
+SDL_Point*	placegps(SDL_Surface*);
 
 
-****************   3 key pointers are maintained by mapmanager.c
-**************** PMTmapset* 		mapsetNow; 			points
-to current mapset in use PMTmapindex* 	mapindexNow;		points to
-current map in use SDL_Surface*	mapNow;				current map on
-display
+*****   3 key pointers are maintained by mapmanager.c********
+PMTmapset* 	mapsetNow; 	points to current mapset in use
+PMTmapindex* 	mapindexNow;	points to current map in use 
+SDL_Surface*	mapNow;		current map on display
 
 
 */
@@ -31,20 +28,18 @@ display
 #define TRUE 1
 #define FALSE 0
 
-/************ static Now variables shared within this source file ***********/
+/************ static Now variables shared within this source file ********/
 /*	- there is no way around these 3 amigos + = semi-global variables
  */
 
-// static PMTmapset* 		mapsetNow; 		/* points to current
-// mapset in use */
-static PMTmapindex *mapindexNow; /* points to current map in use */
-// static SDL_Surface*		mapNow;			/* current map on
-// display
-// */
-static int firsttime = TRUE; /* gps initialization flag */
+// static PMTmapset 	*mapsetNow;  /* current mapset DUPLICATE FIXME */
+static PMTmapindex 	*mapindexNow; 	/* current map in use */
+// static SDL_Surface	*mapNow; /*current map on display DUPLICATE FIXME*/
+
+static int firsttime = TRUE; 		/* gps initialization flag */
 static PMTmapindex *homemapindex;
 
-/******************************************************************************/
+/*************************************************************************/
 
 /* function prototypes*/
 SDL_Point *gpstopixel(PMTmapindex *, SDL_Surface *, uint64_t);
