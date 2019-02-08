@@ -144,8 +144,6 @@ main() {
   SDL_Point nowest = {SCREEN_WIDTH / 5, SCREEN_HEIGHT / 5};
   SDL_Point noeast = {400, SCREEN_HEIGHT / 5};
 
-  SDL_RendererFlip flip = SDL_FLIP_NONE;
-
   int x = 0, y = 0, // coordinates for inMotion movement
       xnew = 0, ynew = 0, xdelta = 0, ydelta = 0;
   /* flags */
@@ -173,8 +171,6 @@ main() {
   Uint8 alphabutton;          // alpha fading for buttons
   char filename[PATH_MAX];
 
-  Uint64 gps;
-  int mymapindex; /* %100 = mapsetindex, /100 = mapindex within mapset*/
 
   /******************** Step 1 game initialize **************************/
 
