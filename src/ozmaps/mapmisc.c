@@ -4,8 +4,6 @@
 
 */
 
-// #define DEBUG
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <limits.h>
@@ -109,10 +107,6 @@ int gpstogpskey(uint64_t gps) {
     latmm++;
   gpskey = longdd * 1000000 + longmm * 10000 + latdd * 100 + latmm;
 
-#ifdef DEBUG
-  printf("gps = %lu\n", gps);
-  printf("gpskey(dddmmddmm) = %d\n", gpskey);
-#endif
 
   return (gpskey);
 }
