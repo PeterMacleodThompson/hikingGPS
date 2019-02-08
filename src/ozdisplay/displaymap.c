@@ -114,7 +114,7 @@ static char *find_datadir() {
   return NULL;
 }
 
-main() {
+int main() {
   SDL_Surface *mymap; /*mymap= active map on screen */
   SDL_Surface *spritesheet;
   SDL_Surface *buttonsheet;
