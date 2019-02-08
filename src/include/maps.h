@@ -3,72 +3,70 @@ revised Sept 2015
 
 Government of Canada Map attributes
         C50k  MAP WIDTH = 30 minutes	11633 pixels varies  	NOT USED
-        C50k  MAP HEIGHT = 15 minutes 	8027 pixels varies		NOT USED
-        C50k  SIZE		unknown - not yet downloaded  FIXME
+        C50k  MAP HEIGHT = 15 minutes 	8027 pixels varies	NOT USED
+        C50k  SIZE 	unknown - not yet downloaded  FIXME
 
         Ctopo MAP WIDTH = 30 minutes	4500 pixels fixed
         Ctopo MAP HEIGHT = 15 minutes 	3600 pixels fixed
-        Ctopo SIZE 				630 gigbytes, 13909 maps (du -h;
-ls -l | wc -l)
+        Ctopo SIZE 	630 gigbytes, 13909 maps (du -h; ls -l | wc -l)
 
-        C250k MAP WIDTH = 2 degrees		8707 pixels varies  map to map
+        C250k MAP WIDTH = 2 degrees	8707 pixels varies  map to map
         C250k MAP HEIGHT = 1 degree 	6758 pixels varies somewhat map to map
-        C250K SIZE 				80 gigbytes, 915 maps (du -h; ls
--l | wc -l)
+        C250K SIZE 	80 gigbytes, 915 maps (du -h; ls -l | wc -l)
 
-        CIMW  MAP WIDTH = 6 degrees		4127 pixels varies
+        CIMW  MAP WIDTH = 6 degrees	4127 pixels varies
         CIMW  MAP HEIGHT = 4 degrees	3738 pixels varies
-        CIMW SIZE 				1.7 gigbytes, 78 maps (du -h; ls
--l | wc -l)
+        CIMW SIZE 	1.7 gigbytes, 78 maps (du -h; ls -l | wc -l)
 
 SEE verifytopo.c for more info
 
 
 *********************************************************************
-   Structure for mapset and map files on disk
+Structure for mapset and map files on disk
+------------------------------------------
 1.  There must be 1 mapset located at:  /MAPSPATH/mapset
 2.  There must be 1 mapindex file [sorted] for each record in mapset:
                 == /MAPSPATH/mapset[i].name/mapindex
 
 
-                *** structure of mapset and maps in memory arrays **
-        loaded from /MAPSPATH/mapset
-        PMTmapset
+Structure of mapset and maps in memory arrays for Canada maps
+-------------------------------------------------------------
+PMTmapset       (loaded from /MAPSPATH/mapset on disk)
+
         -----------------------------------------
-        |C50k		| pointer to C50k mapindex	|--------
-        -----------------------------------------		|
-        |C250k		| pointer to C250k mapindex |-------|----
-        -----------------------------------------		|	|
-        |CIMW		| pointer to CIMW mapindex 	|-------|--	|---|
-        -----------------------------------------		|	|
-| |	|	| |	|	| PMTmapindex
-|	|	|
-        loaded from /MAPSPATH/C50k/mapindex				|
-|	|
-        -----------------------------------------		|	|
-| |dddmmddmm key	| map filename to load	|<-------	|	|
-        |----------------------------------------			|
-| |    ... approx 13,909 records ...		|			|
-|
-        -----------------------------------------			|
-| |	| PMTmapindex
-|	| loaded from /MAPSPATH/C250k/mapindex				|
-|
-        -----------------------------------------			|
-| |dddmmddmm key	| map filename to load	|<----------|	|
-        |---------------------------------------- | |    ... approx 13,909
-records ...		|				|
-        ----------------------------------------- |
-                                                                                                                        |
-        PMTmapindex
-| loaded from /MAPSPATH/CIMW/mapindex |
-        ----------------------------------------- | |dddmmddmm key	| map
-filename to load	|<--------------|
+        |C50k		| pointer to C50k mapindex
+        -----------------------------------------
+        |C250k		| pointer to C250k mapindex
+        -----------------------------------------
+        |CIMW		| pointer to CIMW mapindex
+        -----------------------------------------
+
+PMTmapindex(s)
+        C50k	(loaded from /MAPSPATH/C50k/mapindex)
+        -----------------------------------------
+        |dddmmddmm key	| map filename.png to load from disk
         |----------------------------------------
-        |    ... approx 13,909 records ...		|
+        |    ... approx 13,909 records ...
         -----------------------------------------
 
 
+        C250k 	(loaded from /MAPSPATH/C250k/mapindex)
+        -----------------------------------------
+        |dddmmddmm key	| map filename.png to load from disk
+        |----------------------------------------
+        |    ... approx 919 records ...
+        -----------------------------------------
+
+        CIMW	(loaded from /MAPSPATH/CIMW/mapindex)
+        ----------------------------------------- |
+        |dddmmddmm key	| map filename.png to load from disk
+        |----------------------------------------
+        |    ... approx 78 records ...		|
+        -----------------------------------------
+
+NOTE
+THE ABOVE STRUCTURE CAN BE REPLICATED FOR OTHER JURISDICTIONS via mapsets:
+        eg. USA, Europe, Nautical, Aeronautical etc
 
 */
 
