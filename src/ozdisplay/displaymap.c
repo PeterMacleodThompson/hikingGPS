@@ -76,6 +76,7 @@ int scalepoint(SDL_Rect *, SDL_Point *, SDL_Point *);
 PMTmapset *initmaps(void);
 SDL_Surface *getmap(int, PMTmapset *, SDL_Rect *);
 SDL_Point *placegps(SDL_Surface *mymap);
+void closemaps(PMTmapset *);
 
 char *datapath = NULL;
 
