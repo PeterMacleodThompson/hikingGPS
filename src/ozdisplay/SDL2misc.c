@@ -1,7 +1,5 @@
 /***********   SDL2misc.c  ******************/
 
-//#define DEBUG
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <math.h>
@@ -45,23 +43,7 @@ process...
 
 */
 
-#ifdef DEBUG
-SDL_Surface *getmap(int mapflags) {
-  SDL_Surface *map;
-
-  // Load image at specified path
-  if (mapflags == 0)
-    map = IMG_Load("031e01_1_0.tif");
-  else
-    map = IMG_Load("31e.png");
-
-  if (map == NULL)
-    printf("Unable to load image! SDL_image Error: %s\n", SDL_GetError());
-
-  return (map);
-}
-#endif
-
+/*** load spritesheet from file ***/
 /* FIXME memory leak!!! sprite never gets SDL_FreeSurface( sprite ); */
 SDL_Surface *getsprite(char *filename) {
   SDL_Surface *sprite;
@@ -77,7 +59,9 @@ SDL_Surface *getsprite(char *filename) {
 
 /*****************   initsprite ***************************
  * requires square sprites layed out length-wise in spritesheet
- * returns number of sprites. Completes array of SDL_Rects for extraction
+ * can be any size (pixels) so long as it is square
+ * number of animations within sprite computed via sprite width/height
+ * returns number of animations. Completes array of SDL_Rects for extraction
  */
 int initsprite(SDL_Surface *spritesheet, SDL_Rect *sprite) {
   int spritecount, i;
