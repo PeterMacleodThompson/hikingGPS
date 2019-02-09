@@ -103,7 +103,8 @@ SDL_Surface *getmap(int mapflags,      /* instructions on which map to get */
       if ((mapindexTemp = findgpsmap(gps, mapsetNow)) == NULL) { // not found
         mapset++;
         if (bookend == 9999) {
-          printf(" no map found for gps (dddmmssddmmss)=%llu \n", gps);
+          printf(" no map found for gps (dddmmssddmmss)=%llu \n",
+                 (long long)gps);
           exit(0);
         }
       } else { // found
