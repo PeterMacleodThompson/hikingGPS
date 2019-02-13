@@ -1,9 +1,7 @@
 /*********    mapmisc.c   ********************
 * miscellaneous functions to  convert longlat to pixel and back
  gps longlat format=dddmmssddmmss::  mapkey longlat format=dddmmddmm
- FIXME switch to latlong for searching AND research using double on BBB
-  since NOAA=double degrees, GPS:GPGGA=double minutes  AND look for format converter
-  on github.   FIXME 
+
 */
 
 #include <SDL2/SDL.h>
