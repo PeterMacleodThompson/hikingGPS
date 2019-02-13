@@ -12,7 +12,7 @@ SDL_Point*	placegps(SDL_Surface*);
 
 *****   3 key pointers are maintained by mapmanager.c********
 PMTmapset* 	mapsetNow; 	points to current mapset in use
-PMTmapindex* 	mapindexNow;	points to current map in use
+PMTmapindex* 	mapindexNow;	points to current map in use 
 SDL_Surface*	mapNow;		current map on display
 
 
@@ -33,10 +33,10 @@ SDL_Surface*	mapNow;		current map on display
  */
 
 // static PMTmapset 	*mapsetNow;  /* current mapset DUPLICATE FIXME */
-static PMTmapindex *mapindexNow; /* current map in use */
+static PMTmapindex 	*mapindexNow; 	/* current map in use */
 // static SDL_Surface	*mapNow; /*current map on display DUPLICATE FIXME*/
 
-static int firsttime = TRUE; /* gps initialization flag */
+static int firsttime = TRUE; 		/* gps initialization flag */
 static PMTmapindex *homemapindex;
 
 /*************************************************************************/
@@ -54,6 +54,7 @@ int keyadd(int, int);
 int keysubtract(int, int);
 int gpstogpskey(uint64_t);
 int inthemap(int, PMTmapindex *);
+
 
 /**********************   getmap ****************************************
         ALL map movement is handled in this routine.
@@ -243,8 +244,8 @@ SDL_Surface *getmap(int mapflags,      /* instructions on which map to get */
       camera->y = 0;
       return (mapNow);
     }
-  } else
-    return (mapNow); /* should never reach here */
+  } else 
+     return (mapNow);  /* should never reach here */
 }
 
 /********************** SDL_Point placegps(SDL_Surface) *******************/
