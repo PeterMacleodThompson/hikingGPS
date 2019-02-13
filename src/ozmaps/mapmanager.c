@@ -60,7 +60,6 @@ int keysubtract(int, int);
 int gpstogpskey(uint64_t);
 int inthemap(int, PMTmapindex *);
 
-
 /**********************   getmap ****************************************
         ALL map movement is handled in this routine.
         3 Static variables are used to know where we are ALL times
@@ -249,8 +248,8 @@ SDL_Surface *getmap(int mapflags,      /* instructions on which map to get */
       camera->y = 0;
       return (mapNow);
     }
-  } else 
-     return (mapNow);  /* should never reach here */
+  } else
+    return (mapNow); /* should never reach here */
 }
 
 /********************** SDL_Point placegps(SDL_Surface) *******************/

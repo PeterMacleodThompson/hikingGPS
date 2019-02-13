@@ -107,7 +107,6 @@ int gpstogpskey(uint64_t gps) {
     latmm++;
   gpskey = longdd * 1000000 + longmm * 10000 + latdd * 100 + latmm;
 
-
   return (gpskey);
 }
 
