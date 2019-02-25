@@ -1,7 +1,5 @@
 /***********   SDL2misc.c  ******************/
 
-//#define DEBUG
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <math.h>
@@ -44,23 +42,6 @@ process...
         - get pixel center of new map ....etyc
 
 */
-
-#ifdef DEBUG
-SDL_Surface *getmap(int mapflags) {
-  SDL_Surface *map;
-
-  // Load image at specified path
-  if (mapflags == 0)
-    map = IMG_Load("031e01_1_0.tif");
-  else
-    map = IMG_Load("31e.png");
-
-  if (map == NULL)
-    printf("Unable to load image! SDL_image Error: %s\n", SDL_GetError());
-
-  return (map);
-}
-#endif
 
 /* FIXME memory leak!!! sprite never gets SDL_FreeSurface( sprite ); */
 SDL_Surface *getsprite(char *filename) {
