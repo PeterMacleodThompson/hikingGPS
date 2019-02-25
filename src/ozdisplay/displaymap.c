@@ -30,8 +30,6 @@ END FIXME
 #include <limits.h>
 #include <stdio.h>
 
-#define DEBUG
-
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 #define MAPSCALEDELTA 0.50
