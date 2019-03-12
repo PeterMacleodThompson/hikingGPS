@@ -89,10 +89,6 @@ int initSDL2() {
       i++;
     }
 
-    /* set hintS for different path in SDL_render.c - see SDL2sources */
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, 0);
-
     /* initialize renderer FORCE A RENDERER TO DEBUG*/
     globalrenderer = SDL_CreateRenderer(globalwindow, -1, 0);
     if (globalrenderer == NULL) {
