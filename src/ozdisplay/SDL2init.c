@@ -1,14 +1,14 @@
 /**
- * DOC: --  SDL2init.c  -- Initialize display 
+ * DOC: --  SDL2init.c  -- Initialize display
  * Peter Thompson   -- 2015
  *
- * Initialize global variables  
+ * Initialize global variables
  *   - globalwindow - we do NOT use X
  *   - globalrenderer - we use directfb - depends on linux proper setup!!
  *   - globaltexture - must vary depending on display hardware
  *                     use -D BBB etc to specify display hardware when compiling
  *                     default compile is HDMI
- *   - datapath - to maps, images, sprites 
+ *   - datapath - to maps, images, sprites
  */
 
 #include <SDL2/SDL.h>
@@ -29,7 +29,7 @@ SDL_Texture *globaltexture;   /* texture for display window */
 
 /**
  * initSDL2() - initialize global variables and SDL2
- * Return: True or False depending on whether everything initialized ok 
+ * Return: True or False depending on whether everything initialized ok
  */
 int initSDL2() {
   int success = TRUE;
@@ -88,10 +88,6 @@ int initSDL2() {
       i++;
     }
 
-    /* set hintS for different path in SDL_render.c - see SDL2sources */
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, 0);
-
     /* initialize renderer FORCE A RENDERER TO DEBUG*/
     globalrenderer = SDL_CreateRenderer(globalwindow, -1, 0);
     if (globalrenderer == NULL) {
@@ -137,10 +133,9 @@ int initSDL2() {
   return (success);
 }
 
-
 /**
  * closeSDL2() - close SDL2, set global variables to NULL
- * Return: nothing 
+ * Return: nothing
  */
 void closeSDL2() {
 
