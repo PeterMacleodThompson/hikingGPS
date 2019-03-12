@@ -1,13 +1,15 @@
-/******************  SDL2init.c   ***************************/
-
-/* init SDL Video and GLOBAL Window, SDL GLOBAL Renderer, and SDL_Image file
-loading
-
-FIXME  SDL bug #4232 bugzilla Directfb requires hardware accelerator to work
- workaround #1: add opengles to buildroot
- workaround #2: change SDL source SDL2/src/video/SDL_video.c
-
-*/
+/**
+ * DOC: --  SDL2init.c  -- Initialize display 
+ * Peter Thompson   -- 2015
+ *
+ * Initialize global variables  
+ *   - globalwindow - we do NOT use X
+ *   - globalrenderer - we use directfb - depends on linux proper setup!!
+ *   - globaltexture - must vary depending on display hardware
+ *                     use -D BBB etc to specify display hardware when compiling
+ *                     default compile is HDMI
+ *   - datapath - to maps, images, sprites 
+ */
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -21,10 +23,14 @@ FIXME  SDL bug #4232 bugzilla Directfb requires hardware accelerator to work
 #define FALSE 0
 
 /* GLOBAL VARIABLES FOR WINDOW */
-SDL_Window *globalwindow;     // Display window we'll be rendering to
-SDL_Renderer *globalrenderer; // The window renderer
-SDL_Texture *globaltexture;   // texture for display window
+SDL_Window *globalwindow;     /* Display window we'll be rendering to */
+SDL_Renderer *globalrenderer; /* The window renderer */
+SDL_Texture *globaltexture;   /* texture for display window */
 
+/**
+ * initSDL2() - initialize global variables and SDL2
+ * Return: True or False depending on whether everything initialized ok 
+ */
 int initSDL2() {
   int success = TRUE;
 
@@ -45,14 +51,14 @@ int initSDL2() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
   SDL_Log("SDL log is verbose\n");
 
-  // Initialize SDL2 - video only
+  /* Initialize SDL2 - video only */
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
     success = FALSE;
   } else
     printf("Current Video Driver = %s\n", SDL_GetCurrentVideoDriver());
 
-  // Create GLOBAL window
+  /* Create GLOBAL window */
   if (success == TRUE) {
     globalwindow = SDL_CreateWindow("hiker!!", SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
@@ -63,8 +69,9 @@ int initSDL2() {
     }
   }
 
-  /*Create GLOBAL renderer, use "software renderer" for now
-  see SDL_render.c in SDL2sources */
+  /* Create GLOBAL renderer, use "software renderer" for now
+   * see SDL_render.c in SDL2sources
+   */
   if (success == TRUE) {
     /* print available renderer drivers */
     r = SDL_GetNumRenderDrivers();
@@ -97,7 +104,7 @@ int initSDL2() {
     }
   }
 
-  // Initialize PNG, TIF, JPG loading
+  /* Initialize PNG, TIF, JPG loading */
   if (success == TRUE) {
     int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG;
     if (!(IMG_Init(imgFlags) & imgFlags)) {
@@ -108,8 +115,9 @@ int initSDL2() {
   }
 
   /*  create global textures
-          for X86 use  SDL_PIXELFORMAT_ARGB8888,
-          for beaglebone black use SDL_PIXELFORMAT_RGB565*/
+   *       for X86 use  SDL_PIXELFORMAT_ARGB8888,
+   *       for beaglebone black use SDL_PIXELFORMAT_RGB565
+   */
   if (success == TRUE) {
     globaltexture = SDL_CreateTexture(globalrenderer, SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
@@ -120,24 +128,29 @@ int initSDL2() {
     }
 
     SDL_SetRenderDrawColor(globalrenderer, 255, 0, 0,
-                           255); // for drawing, clearing; RGBA
-    SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND); // FIXME
-    // FIXME remove the above line after alpha works - installed for alpha
+                           255); /* for drawing, clearing; RGBA */
+    SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND); /* FIXME
+     FIXME remove the above line after alpha works - installed for alpha */
   }
 
   printf("SDL2init complete\n\n\n");
   return (success);
 }
 
+
+/**
+ * closeSDL2() - close SDL2, set global variables to NULL
+ * Return: nothing 
+ */
 void closeSDL2() {
 
-  // Destroy window
+  /* Destroy window */
   SDL_DestroyWindow(globalwindow);
   SDL_DestroyRenderer(globalrenderer);
   SDL_DestroyTexture(globaltexture);
 
   globalwindow = NULL;
   globalrenderer = NULL;
-  // Quit SDL subsystems IMG_Load
+  /* Quit SDL subsystems IMG_Load */
   SDL_Quit();
 }
