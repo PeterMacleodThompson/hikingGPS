@@ -34,7 +34,9 @@ SDL_Texture *globaltexture;   /* texture for display window */
 int initSDL2() {
   int success = TRUE;
 
-  /* informational debugging variables */
+  /* informational & debugging variables */
+  SDL_version compiled;
+  SDL_version linked;
   SDL_RendererInfo info;
   int r, i;
 
@@ -57,6 +59,14 @@ int initSDL2() {
     success = FALSE;
   } else
     printf("Current Video Driver = %s\n", SDL_GetCurrentVideoDriver());
+
+  /* display SDL version. see https://wiki.libsdl.org/SDL_VERSION  */
+  SDL_VERSION(&compiled);
+  SDL_GetVersion(&linked);
+  printf("SDL2 compiler version: %d.%d.%d ...\n", compiled.major,
+         compiled.minor, compiled.patch);
+  printf("SDL2 linked version: %d.%d.%d.\n", linked.major, linked.minor,
+         linked.patch);
 
   /* Create GLOBAL window */
   if (success == TRUE) {
