@@ -14,6 +14,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_log.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 
 #define SCREEN_WIDTH 500
@@ -143,6 +144,15 @@ int initSDL2() {
                            255); /* for drawing, clearing; RGBA */
     SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND); /* FIXME
      FIXME remove the above line after alpha works - installed for alpha */
+  }
+
+  /* Initialize SDL_ttf */
+  if (success == TRUE) {
+    if (TTF_Init() == -1) {
+      printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n",
+             TTF_GetError());
+      success = FALSE;
+    }
   }
 
   printf("SDL2init complete\n\n\n");
