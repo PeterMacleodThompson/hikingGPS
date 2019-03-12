@@ -127,9 +127,15 @@ int initSDL2() {
    *       for beaglebone black use SDL_PIXELFORMAT_RGB565
    */
   if (success == TRUE) {
+#if BBB /* compile with -D BBB for beaglebone black */
+    globaltexture = SDL_CreateTexture(globalrenderer, SDL_PIXELFORMAT_RGB888,
+                                      SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
+                                      SCREEN_HEIGHT);
+#else /* default back to X86 without -D specified */
     globaltexture = SDL_CreateTexture(globalrenderer, SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
                                       SCREEN_HEIGHT);
+#endif
     if (globaltexture == NULL) {
       printf("Texture could not be created! SDL Error: %s\n", SDL_GetError());
       success = FALSE;
