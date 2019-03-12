@@ -1,27 +1,19 @@
-
-/******************  display map  ***************************
-   compile with
-gcc -g  displaymap.c SDL2init.c SDL2misc.c -o displaymap -lSDL2 -lSDL2_image
--lSDL2_gfx -lm
-
-RGB color scheme:  	stykman belt	= magenta (255,0,255)
-                                        movemap arrows 	= yellow (255,255,0)
-                                        newmap 			= orange
-(255,150,0)
-
-FIXME todo someday when bored
-- indent is wrong
-- update all error handling
-        - change SDL calls to if( (x=SDL) !=0) SDLerr("display.c:12");
-        - change PMT function calls: if( functioncall() != 0 )
-PMTerr("display.c:13);
-- figure out problem with alpha blending.... ??? and incorporate for max
-coolness
-- when you define a pointer,  set it to NULL....  as in SDL_Surface peter =
-NULL;
-
-END FIXME
-*/
+/**
+ * DOC: -- displaymap.c -- interactive display of map(s) on screen
+ * Peter Thompson 2015
+ *
+ * This is the main program for displaying a map on the screen,
+ * interacting with that map, and getting new maps.
+ * Structure is like a game program
+ *
+ * compile on X86 with
+ * gcc displaymap.c SDL2init.c SDL2misc.c  -lSDL2 -lSDL2_image -lSDL2_gfx -lm
+ *
+ * RGB color scheme
+ *  	stykman belt		= magenta (255,0,255)
+ *      movemap arrows 		= yellow (255,255,0)
+ *      zoom/pan new map 	= orange (255,150,0)
+ */
 
 #include "../include/maps.h" /* for mapflags only */
 #include "SDL2/SDL2_gfxPrimitives.h"
@@ -33,15 +25,15 @@ END FIXME
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 #define MAPSCALEDELTA 0.50
-#define BUTTONSPEED 5     // lower number = higher speed
-#define MAPBUTTONSPEED 15 // 15 => 3 seconds to push button
+#define BUTTONSPEED 5     /* lower number = higher speed */
+#define MAPBUTTONSPEED 15 /* 15 => 3 seconds to push button */
 
 #define TRUE 1
 #define FALSE 0
 
 #define MAX_ANIMATIONS 10
-#define FPS 8     // default 8 frames per second == 1/8th second per frame
-#define ALPHA 125 // 125/255 = 50% alpha for green ring
+#define FPS 8     /* default 8 frames per second == 1/8th second per frame */
+#define ALPHA 125 /* 125/255 = 50% alpha for green ring */
 
 /* buttons in buttonsheet */
 #define WEST 0
@@ -52,9 +44,9 @@ END FIXME
 #define DOWN 5
 
 /* GLOBAL VARIABLES FOR WINDOW */
-extern SDL_Window *globalwindow;     // The window we'll be rendering to
-extern SDL_Renderer *globalrenderer; // The window renderer */
-extern SDL_Texture *globaltexture;   // texture for display window
+extern SDL_Window *globalwindow;     /* The window we'll be rendering to */
+extern SDL_Renderer *globalrenderer; /* The window renderer */
+extern SDL_Texture *globaltexture;   /* texture for display window */
 
 /* function prototypes in SDLmisc.c */
 void centerRect(SDL_Rect *centerme, int x, int y);
@@ -77,8 +69,11 @@ SDL_Point *placegps(SDL_Surface *mymap);
 void closemaps(PMTmapset *);
 
 char *datapath = NULL;
-
-/* Try to find datadir relative to the executable path */
+/**
+ * find_datadir() - set datapath to images, maps, sprites data
+ * Try to find datadir relative to the executable path
+ * Return: NULL
+ */
 static char *find_datadir() {
   char *base_path;
   size_t length;
@@ -113,6 +108,10 @@ static char *find_datadir() {
   return NULL;
 }
 
+/**
+ * main() - map on screen interaction
+ * Return: NULL
+ */
 int main() {
   SDL_Surface *mymap; /*mymap= active map on screen */
   SDL_Surface *spritesheet;
@@ -121,9 +120,9 @@ int main() {
 
   SDL_Rect camera = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
   SDL_Rect sprite[MAX_ANIMATIONS];
-  SDL_Rect spriteW = {250, 250, 0, 0};     // SpriteWindow for display screen
-  SDL_Rect button[6];                      // currently 6 buttons on buttonsheet
-  SDL_Rect buttonW = {250, 250, 100, 100}; // buttons are 50x50 pixels FIXME
+  SDL_Rect spriteW = {250, 250, 0, 0}; /* SpriteWindow for display screen */
+  SDL_Rect button[6];                  /* currently 6 buttons on buttonsheet */
+  SDL_Rect buttonW = {250, 250, 100, 100}; /* buttons are 50x50 pixels FIXME */
 
   SDL_Texture *spritetexture;
   SDL_Texture *buttontexture;
@@ -132,8 +131,8 @@ int main() {
   SDL_Texture *pleaseorient;
   SDL_Event e;
 
-  SDL_Point *gpspixel; // eg Percy Lake logcabin = { 2890, 1600} on C50k
-  SDL_Point center;    // generic center of a rectangle
+  SDL_Point *gpspixel; /* eg Percy Lake logcabin = { 2890, 1600} on C50k */
+  SDL_Point center;    /* generic center of a rectangle */
   SDL_Point scalept;
   /* screen geography */
   SDL_Point myfinger;
@@ -145,7 +144,7 @@ int main() {
   SDL_Point nowest = {SCREEN_WIDTH / 5, SCREEN_HEIGHT / 5};
   SDL_Point noeast = {400, SCREEN_HEIGHT / 5};
 
-  int x = 0, y = 0, // coordinates for inMotion movement
+  int x = 0, y = 0, /* coordinates for inMotion movement */
       xnew = 0, ynew = 0, xdelta = 0, ydelta = 0;
   /* flags */
   int inMotionF = FALSE;
@@ -161,15 +160,15 @@ int main() {
   int quit;
 
   int animationRate = FPS;
-  int spritecount; // 4 frames in spritesheet
+  int spritecount; /* 4 frames in spritesheet */
   int spriteframe;
   int startTime = SDL_GetTicks();
-  float spritescale = 1.2; // between between 0.25 and 4.0
-  float mapscale = 1.0;    // between 0.25 and 4.0
+  float spritescale = 1.2; /* between between 0.25 and 4.0 */
+  float mapscale = 1.0;    /* between 0.25 and 4.0 */
   double angle, angledelta;
 
-  int centerFmsecs, mapmsecs; // timers in milliseconds
-  Uint8 alphabutton;          // alpha fading for buttons
+  int centerFmsecs, mapmsecs; /* timers in milliseconds */
+  Uint8 alphabutton;          /* alpha fading for buttons */
   char filename[PATH_MAX];
 
   /******************** Step 1 game initialize **************************/
@@ -185,7 +184,6 @@ int main() {
 
   strcpy(filename, datapath);
   strcat(filename, "images/styxwalkerR.png");
-  // strcat( filename, "questionmark.png" );
   if ((spritesheet = getsprite(filename)) == NULL)
     exit(0);
   strcpy(filename, datapath);
@@ -194,7 +192,6 @@ int main() {
     exit(0);
 
   /* initialize sensors,maps, get map containing gps, place gps on map */
-  // initsensors(); //comment this line out for X86, leave in for igepv2
   mapsetPtr = initmaps();
   mymap = getmap(GPSMAP, mapsetPtr, &camera);
   if (mymap == NULL)
@@ -202,7 +199,7 @@ int main() {
   if ((gpspixel = placegps(mymap)) == NULL)
     exit(0);
 
-  // convert spritesheet & buttonsheet to texture + clip rectangles
+  /* convert spritesheet & buttonsheet to texture + clip rectangles */
   spritecount = initsprite(spritesheet, sprite);
   spritetexture = SDL_CreateTextureFromSurface(globalrenderer, spritesheet);
   spriteW.w = sprite[0].w * spritescale;
@@ -212,10 +209,10 @@ int main() {
   buttontexture = SDL_CreateTextureFromSurface(globalrenderer, buttonsheet);
   SDL_SetTextureBlendMode(buttontexture, SDL_BLENDMODE_BLEND);
 
-  // create screenmap in display format
+  /* create screenmap in display format */
   screenmap = SDL_GetWindowSurface(globalwindow);
 
-  // get background textures for screen
+  /* get background textures for screen */
   strcpy(filename, datapath);
   strcat(filename, "images/circle1.png");
   blackcircle = gettexture(filename);
@@ -231,9 +228,9 @@ int main() {
   /* SDL BUG:: FIXME ALPHA + SDL_RenderCopyEx() below causes greenring to
      disappear SDL_SetTextureBlendMode(greenring, SDL_BLENDMODE_BLEND);
           SDL_SetTextureAlphaMod( greenring, ALPHA);
-          // see also SDL_SetTextureColorMod for ideas */
+                see also SDL_SetTextureColorMod for ideas */
 
-  // initialize camera: center = gps
+  /* initialize camera: center = gps */
   camera.w = SCREEN_WIDTH;
   camera.h = SCREEN_HEIGHT;
   camera.x = gpspixel->x - SCREEN_WIDTH / 2;
@@ -241,13 +238,13 @@ int main() {
 
   /************ Start Giant Loop: Step 2 Events = input events ****************/
 
-  // While application is running
+  /* While application is running */
   quit = FALSE;
   while (!quit) {
     /*Handle events on queue  KEEP THIS TIGHT!!*/
     while (SDL_PollEvent(&e) != 0) {
       /*   try switch (e.type) with case statements for each */
-      // User requests quit
+      /* User requests quit */
       if (e.type == SDL_QUIT) {
         quit = TRUE;
       }
@@ -267,7 +264,7 @@ int main() {
           angle = 0.0;
           ringF = TRUE;
         } else if (incenter(x, y)) {
-          centerF = TRUE; // start march to center-reset button
+          centerF = TRUE; /* start march to center-reset button */
           centerFmsecs = SDL_GetTicks();
         } else
           inMotionF = TRUE;
@@ -302,12 +299,12 @@ NOTE incircle is pass by value structure, NOT pass by reference */
 
       if (inMotionF && e.type == SDL_MOUSEMOTION) {
         /*Move the camera by the same delta that the mouse offsets moved*/
-        xnew = e.motion.x; // current mouse position
+        xnew = e.motion.x; /* current mouse position */
         ynew = e.motion.y;
-        xdelta = xnew - x; // delta moved by mouse
+        xdelta = xnew - x; /* delta moved by mouse */
         ydelta = ynew - y;
-        camera.x -= (int)(xdelta * mapscale); // move camera same
-        camera.y -= (int)(ydelta * mapscale); // delta NEGATIVE amount
+        camera.x -= (int)(xdelta * mapscale); /* move camera same */
+        camera.y -= (int)(ydelta * mapscale); /* delta NEGATIVE amount */
         x = xnew;
         y = ynew;
       }
@@ -316,27 +313,27 @@ NOTE incircle is pass by value structure, NOT pass by reference */
         if (inMotionF) {
           /*Move the camera by the same delta
           that the mouse offsets moved*/
-          xnew = e.tfinger.x; // current mouse position
+          xnew = e.tfinger.x; /* current mouse position */
           ynew = e.tfinger.y;
-          xdelta = xnew - x; // delta moved by mouse
+          xdelta = xnew - x; /* delta moved by mouse */
           ydelta = ynew - y;
-          camera.x -= (int)(xdelta * mapscale); // move camera same
-          camera.y -= (int)(ydelta * mapscale); // delta NEGATIVE amount
+          camera.x -= (int)(xdelta * mapscale); /* move camera same */
+          camera.y -= (int)(ydelta * mapscale); /* delta NEGATIVE amount */
           x = xnew;
           y = ynew;
         } else if (ringF) {
-          xnew = e.tfinger.x; // current mouse position
+          xnew = e.tfinger.x; /* current mouse position */
           ynew = e.tfinger.y;
           if (ongreenring(x, y)) {
             angledelta = getangle(x, y, xnew, ynew);
             angle += angledelta;
             mapscale += angledelta / 40.0;
-            if (mapscale > 8.0) { // MAX_MAPSCALE
+            if (mapscale > 8.0) { /* MAX_MAPSCALE */
               mapscale = 8.0;
               mapflags = mapflags | scalemapUPF;
               mapmsecs = SDL_GetTicks();
             }
-            if (mapscale < 0.5) { // MIN_MAPSCALE
+            if (mapscale < 0.5) { /* MIN_MAPSCALE */
               mapscale = 0.5;
               mapflags = mapflags | scalemapDNF;
               mapmsecs = SDL_GetTicks();
@@ -347,11 +344,11 @@ NOTE incircle is pass by value structure, NOT pass by reference */
           y = ynew;
         } else if (centerF)
           if (!incenter(x, y))
-            centerF = FALSE; // stop center-reset button march
+            centerF = FALSE; /* stop center-reset button march */
       }
 
       if (e.type == SDL_KEYDOWN) {
-        // Select surfaces based on key press
+        /* Select surfaces based on key press */
         switch (e.key.keysym.sym) {
         case SDLK_UP:
           if (animationRate++ > 30)
@@ -383,7 +380,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
 
         case SDLK_w:
           mapscale += MAPSCALEDELTA;
-          if (mapscale > 8.0) { // MAX_MAPSCALE
+          if (mapscale > 8.0) { /* MAX_MAPSCALE */
             mapscale = 8.0;
             mapflags = mapflags | scalemapUPF;
             mapmsecs = SDL_GetTicks();
@@ -392,7 +389,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
 
         case SDLK_s:
           mapscale -= MAPSCALEDELTA;
-          if (mapscale < 0.5) { // MIN_MAPSCALE
+          if (mapscale < 0.5) { /* MIN_MAPSCALE */
             mapscale = 0.5;
             mapflags = mapflags | scalemapDNF;
             mapmsecs = SDL_GetTicks();
@@ -427,7 +424,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
     /************ In Giant Loop: Step 3 Update data  *****************
      *                          eg NPC Non-Player Character **********/
 
-    // compute spriteframe to put on renderer - copied off internet
+    /* compute spriteframe to put on renderer - copied off internet */
     spriteframe =
         ((SDL_GetTicks() - startTime) * animationRate / 1000) % spritecount;
     /* FIXME this IS REALLY WIERD - DOESN'T WORK FOR spritescale=1.0 FIXME
@@ -435,11 +432,11 @@ NOTE incircle is pass by value structure, NOT pass by reference */
     FINALVERSION get rid of spritescale...FIXME*/
 
     if (spritescale != 1.0) {
-      spriteW.w = (int)(sprite[0].w * spritescale); // all sprites same size
+      spriteW.w = (int)(sprite[0].w * spritescale); /* all sprites same size */
       spriteW.h = (int)(sprite[0].h * spritescale);
     }
 
-    // scale camera - ensure it remains centered & inside map surface
+    /* scale camera - ensure it remains centered & inside map surface */
     center.x = camera.x + camera.w / 2;
     center.y = camera.y + camera.h / 2;
     camera.w = SCREEN_WIDTH * mapscale;
@@ -467,17 +464,17 @@ NOTE incircle is pass by value structure, NOT pass by reference */
     }
 
     gpspixel = placegps(mymap);
-    // scale gps position on camera
+    /* scale gps position on camera */
     if (gpspixel != NULL) { /* gps on map? */
-      // check if gps onscreen
+      /* check if gps onscreen */
       spriteF = scalepoint(&camera, gpspixel, &scalept);
-      // center sprite on his belt
+      /* center sprite on his belt */
       centerRect(&spriteW, scalept.x, scalept.y);
     }
 
-    // timecheck on center-reset button
+    /* timecheck on center-reset button */
     if (centerF && (SDL_GetTicks() - centerFmsecs) >= 250 * BUTTONSPEED) {
-      // reset displaymap to defaults
+      /* reset displaymap to defaults */
       mymap = getmap(GPSMAP, mapsetPtr, &camera);
       gpspixel = placegps(mymap);
       mapscale = 1.0;
@@ -489,7 +486,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
       centerF = FALSE;
     }
 
-    // timecheck on mapchange buttons
+    /* timecheck on mapchange buttons */
     if (mapflags) {
       alphabutton = 255 - (SDL_GetTicks() - mapmsecs) / MAPBUTTONSPEED;
       if (alphabutton <= 10)
@@ -509,7 +506,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
 
     /************ In Giant Loop: Step 4 Render to screen ****************/
 
-    // Render
+    /* Render */
     err = SDL_BlitScaled(mymap, &camera, screenmap, NULL);
     err = SDL_UpdateTexture(globaltexture, NULL, screenmap->pixels,
                             screenmap->pitch);
@@ -518,12 +515,12 @@ NOTE incircle is pass by value structure, NOT pass by reference */
 
     /* Render map and gps sprite */
     err = SDL_RenderClear(globalrenderer);
-    err = SDL_RenderCopy(globalrenderer, globaltexture, NULL, NULL); // map
+    err = SDL_RenderCopy(globalrenderer, globaltexture, NULL, NULL); /* map */
     if (spriteF)
       err = SDL_RenderCopy(globalrenderer, spritetexture, &sprite[spriteframe],
-                           &spriteW); // sprite
+                           &spriteW); /* sprite */
     err = SDL_RenderCopy(globalrenderer, blackcircle, NULL,
-                         NULL); // screen outline
+                         NULL); /* screen outline */
 
     /* Render outer rings if needed */
     if (pleaseorientF)
@@ -546,7 +543,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
          texture to disappear when rendered....    alpha is problematic!!! err =
          SDL_SetTextureAlphaMod( buttontexture, alphadeleteme ); err =
          filledCircleRGBA( globalrenderer, SCREEN_WIDTH/4, SCREEN_HEIGHT/4,
-         // circle center 30,	255, 0, 255, alphabutton );		//
+          circle center 30,	255, 0, 255, alphabutton );
          circle radius, RGBA
       */
 
@@ -595,7 +592,7 @@ NOTE incircle is pass by value structure, NOT pass by reference */
   SDL_FreeSurface(spritesheet);
   closemaps(mapsetPtr);
 
-  // Free global resources and close SDL
+  /* Free global resources and close SDL */
   closeSDL2();
 
   return 0;
