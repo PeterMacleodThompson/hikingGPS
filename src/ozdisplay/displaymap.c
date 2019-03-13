@@ -67,46 +67,7 @@ PMTmapset *initmaps(void);
 SDL_Surface *getmap(int, PMTmapset *, SDL_Rect *);
 SDL_Point *placegps(SDL_Surface *mymap);
 void closemaps(PMTmapset *);
-
-char *datapath = NULL;
-/**
- * find_datadir() - set datapath to images, maps, sprites data
- * Try to find datadir relative to the executable path
- * Return: data path or NULL on error
- */
-static char *find_datadir() {
-  char *base_path;
-  size_t length;
-
-  base_path = SDL_GetBasePath();
-  if (base_path) {
-    /* We replace the last bin/ with share/oz2 to get the the resource path */
-    length = SDL_strlen(base_path);
-    if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
-      char *path =
-          (char *)SDL_realloc(base_path, length + SDL_strlen("share/oz2/") + 1);
-      if (path == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Couldn't realloc memory for base path: %s\n", base_path);
-        SDL_free(base_path);
-        return NULL;
-      }
-
-      base_path = path;
-      SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
-      return base_path;
-    } else {
-      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                   "Couldn't find a valid base path: %s\n", base_path);
-      SDL_free(base_path);
-    }
-  } else {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
-                 SDL_GetError());
-  }
-  /* An error happened */
-  return NULL;
-}
+char *find_datadir(); /* SDL2init.c find datapath */
 
 /**
  * main() - map on screen interaction
@@ -209,14 +170,16 @@ int main() {
   buttontexture = SDL_CreateTextureFromSurface(globalrenderer, buttonsheet);
   SDL_SetTextureBlendMode(buttontexture, SDL_BLENDMODE_BLEND);
 
-	/*create screenmap in display format */
-#if BBB   		/* compile with gcc -D BBB */
-	screenmap = SDL_CreateRGBSurfaceWithFormat( 
-		0, SCREEN_WIDTH, SCREEN_HEIGHT, 24, SDL_PIXELFORMAT_RGB888); 
-#else			/* X86 - post SDL2.0.5  */
-/*	screenmap = SDL_CreateRGBSurfaceWithFormat( 
-		0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_PIXELFORMAT_ARGB8888); */
-	screenmap = SDL_GetWindowSurface(globalwindow); /* pre SDL2.0.5 only DELETEME*/
+  /*create screenmap in display format */
+#if BBB /* compile with gcc -D BBB */
+  screenmap = SDL_CreateRGBSurfaceWithFormat(0, SCREEN_WIDTH, SCREEN_HEIGHT, 24,
+                                             SDL_PIXELFORMAT_RGB888);
+#else /* X86 - post SDL2.0.5  */
+  /*	screenmap = SDL_CreateRGBSurfaceWithFormat(
+                  0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_PIXELFORMAT_ARGB8888);
+   */
+  screenmap =
+      SDL_GetWindowSurface(globalwindow); /* pre SDL2.0.5 only DELETEME*/
 #endif
 
   /* get background textures for screen */
