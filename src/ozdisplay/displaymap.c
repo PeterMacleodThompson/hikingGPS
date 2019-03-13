@@ -209,8 +209,15 @@ int main() {
   buttontexture = SDL_CreateTextureFromSurface(globalrenderer, buttonsheet);
   SDL_SetTextureBlendMode(buttontexture, SDL_BLENDMODE_BLEND);
 
-  /* create screenmap in display format */
-  screenmap = SDL_GetWindowSurface(globalwindow);
+	/*create screenmap in display format */
+#if BBB   		/* compile with gcc -D BBB */
+	screenmap = SDL_CreateRGBSurfaceWithFormat( 
+		0, SCREEN_WIDTH, SCREEN_HEIGHT, 24, SDL_PIXELFORMAT_RGB888); 
+#else			/* X86 - post SDL2.0.5  */
+/*	screenmap = SDL_CreateRGBSurfaceWithFormat( 
+		0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_PIXELFORMAT_ARGB8888); */
+	screenmap = SDL_GetWindowSurface(globalwindow); /* pre SDL2.0.5 only DELETEME*/
+#endif
 
   /* get background textures for screen */
   strcpy(filename, datapath);
