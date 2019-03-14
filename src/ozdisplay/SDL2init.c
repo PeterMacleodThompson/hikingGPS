@@ -43,8 +43,7 @@ char *find_datadir() {
     /* We replace the last bin/ with share/oz2 to get the the resource path */
     length = SDL_strlen(base_path);
     if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
-      char *path =
-          (char *)SDL_realloc(base_path, length + SDL_strlen("") + 1);
+      char *path = (char *)SDL_realloc(base_path, length + SDL_strlen("") + 1);
       if (path == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "Couldn't realloc memory for base path: %s\n", base_path);
@@ -108,6 +107,13 @@ int initSDL2() {
          compiled.minor, compiled.patch);
   printf("SDL2 linked version: %d.%d.%d.\n", linked.major, linked.minor,
          linked.patch);
+
+  /* display hikingGPS version */
+#if BBB
+  printf("hikingGPS version for Beaglebone Black: compiled with -D BBB\n");
+#else
+  printf("hikingGPS version for X86: compile with -D ??? for other versions\n");
+#endif
 
   /* Create GLOBAL window */
   if (success == TRUE) {
