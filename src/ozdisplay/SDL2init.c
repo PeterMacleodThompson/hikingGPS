@@ -44,7 +44,7 @@ char *find_datadir() {
     length = SDL_strlen(base_path);
     if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
       char *path =
-          (char *)SDL_realloc(base_path, length + SDL_strlen("share/oz2/") + 1);
+          (char *)SDL_realloc(base_path, length + SDL_strlen("") + 1);
       if (path == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "Couldn't realloc memory for base path: %s\n", base_path);
@@ -53,7 +53,7 @@ char *find_datadir() {
       }
 
       base_path = path;
-      SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
+      SDL_strlcpy(base_path + length - 4, "", 11);
       return base_path;
     } else {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
