@@ -109,6 +109,13 @@ int initSDL2() {
   printf("SDL2 linked version: %d.%d.%d.\n", linked.major, linked.minor,
          linked.patch);
 
+  /* display hikingGPS version */
+#if BBB
+  printf("hikingGPS version for Beaglebone Black: compiled with -D BBB\n");
+#else
+  printf("hikingGPS version for X86: compile with -D ??? for other versions\n");
+#endif
+
   /* Create GLOBAL window */
   if (success == TRUE) {
     globalwindow = SDL_CreateWindow("hiker!!", SDL_WINDOWPOS_UNDEFINED,
