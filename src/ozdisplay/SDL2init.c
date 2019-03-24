@@ -32,7 +32,7 @@ char *datapath;               /* path to maps, images, sprites */
 /**
  * find_datadir() - set datapath to images, maps, sprites data
  * Try to find datadir relative to the executable path
- * Return: NULL
+ * Return: datapath or NULL on error
  */
 char *find_datadir() {
   char *base_path;
@@ -126,7 +126,8 @@ int initSDL2() {
     }
   }
 
-  /* Create GLOBAL renderer, use "software renderer" for now
+  /*
+   * Create GLOBAL renderer, use "software renderer" for now
    * see SDL_render.c in SDL2sources
    */
   if (success == TRUE) {
@@ -188,17 +189,14 @@ int initSDL2() {
 
     SDL_SetRenderDrawColor(globalrenderer, 255, 0, 0,
                            255); /* for drawing, clearing; RGBA */
-    SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND); /* FIXME
-     FIXME remove the above line after alpha works - installed for alpha */
+    SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND);
+    /* FIXME remove the above line after alpha works - installed for alpha */
   }
 
   /* Initialize SDL_ttf */
-  if (success == TRUE) {
-    if (TTF_Init() == -1) {
-      printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n",
-             TTF_GetError());
-      success = FALSE;
-    }
+  if (success && TTF_Init() == -1) {
+    printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+    success = FALSE;
   }
 
   printf("SDL2init complete\n\n\n");

@@ -71,7 +71,7 @@ char *find_datadir(); /* SDL2init.c find datapath */
 
 /**
  * main() - map on screen interaction
- * Return: NULL
+ * Return: 0
  */
 int main() {
   SDL_Surface *mymap; /*mymap= active map on screen */
