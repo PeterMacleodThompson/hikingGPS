@@ -1,17 +1,20 @@
-/******************  SDL2init.c   ***************************/
-
-/* init SDL Video and GLOBAL Window, SDL GLOBAL Renderer, and SDL_Image file
-loading
-
-FIXME  SDL bug #4232 bugzilla Directfb requires hardware accelerator to work
- workaround #1: add opengles to buildroot
- workaround #2: change SDL source SDL2/src/video/SDL_video.c
-
-*/
+/**
+ * DOC: --  SDL2init.c  -- Initialize display
+ * Peter Thompson   -- 2015
+ *
+ * Initialize global variables
+ *   - globalwindow - we do NOT use X
+ *   - globalrenderer - we use directfb - depends on linux proper setup!!
+ *   - globaltexture - must vary depending on display hardware
+ *                     use -D BBB etc to specify display hardware when compiling
+ *                     default compile is HDMI
+ *   - datapath - to maps, images, sprites
+ */
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_log.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 
 #define SCREEN_WIDTH 500
@@ -21,14 +24,60 @@ FIXME  SDL bug #4232 bugzilla Directfb requires hardware accelerator to work
 #define FALSE 0
 
 /* GLOBAL VARIABLES FOR WINDOW */
-SDL_Window *globalwindow;     // Display window we'll be rendering to
-SDL_Renderer *globalrenderer; // The window renderer
-SDL_Texture *globaltexture;   // texture for display window
+SDL_Window *globalwindow;     /* Display window we'll be rendering to */
+SDL_Renderer *globalrenderer; /* The window renderer */
+SDL_Texture *globaltexture;   /* texture for display window */
+char *datapath;               /* path to maps, images, sprites */
 
+/**
+ * find_datadir() - set datapath to images, maps, sprites data
+ * Try to find datadir relative to the executable path
+ * Return: datapath or NULL on error
+ */
+char *find_datadir() {
+  char *base_path;
+  size_t length;
+
+  base_path = SDL_GetBasePath();
+  if (base_path) {
+    /* We replace the last bin/ with share/oz2 to get the the resource path */
+    length = SDL_strlen(base_path);
+    if ((length > 4) && !SDL_strcmp(base_path + length - 5, "/bin/")) {
+      char *path =
+          (char *)SDL_realloc(base_path, length + SDL_strlen("share/oz2/") + 1);
+      if (path == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Couldn't realloc memory for base path: %s\n", base_path);
+        SDL_free(base_path);
+        return NULL;
+      }
+
+      base_path = path;
+      SDL_strlcpy(base_path + length - 4, "share/oz2/", 11);
+      return base_path;
+    } else {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Couldn't find a valid base path: %s\n", base_path);
+      SDL_free(base_path);
+    }
+  } else {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
+                 SDL_GetError());
+  }
+  /* An error happened */
+  return NULL;
+}
+
+/**
+ * initSDL2() - initialize global variables and SDL2
+ * Return: True or False depending on whether everything initialized ok
+ */
 int initSDL2() {
   int success = TRUE;
 
-  /* informational debugging variables */
+  /* informational & debugging variables */
+  SDL_version compiled;
+  SDL_version linked;
   SDL_RendererInfo info;
   int r, i;
 
@@ -45,14 +94,29 @@ int initSDL2() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
   SDL_Log("SDL log is verbose\n");
 
-  // Initialize SDL2 - video only
+  /* Initialize SDL2 - video only */
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
     success = FALSE;
   } else
     printf("Current Video Driver = %s\n", SDL_GetCurrentVideoDriver());
 
-  // Create GLOBAL window
+  /* display SDL version. see https://wiki.libsdl.org/SDL_VERSION  */
+  SDL_VERSION(&compiled);
+  SDL_GetVersion(&linked);
+  printf("SDL2 compiler version: %d.%d.%d ...\n", compiled.major,
+         compiled.minor, compiled.patch);
+  printf("SDL2 linked version: %d.%d.%d.\n", linked.major, linked.minor,
+         linked.patch);
+
+  /* display hikingGPS version */
+#if BBB
+  printf("hikingGPS version for Beaglebone Black: compiled with -D BBB\n");
+#else
+  printf("hikingGPS version for X86: compile with -D ??? for other versions\n");
+#endif
+
+  /* Create GLOBAL window */
   if (success == TRUE) {
     globalwindow = SDL_CreateWindow("hiker!!", SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
@@ -63,8 +127,10 @@ int initSDL2() {
     }
   }
 
-  /*Create GLOBAL renderer, use "software renderer" for now
-  see SDL_render.c in SDL2sources */
+  /*
+   * Create GLOBAL renderer, use "software renderer" for now
+   * see SDL_render.c in SDL2sources
+   */
   if (success == TRUE) {
     /* print available renderer drivers */
     r = SDL_GetNumRenderDrivers();
@@ -81,11 +147,7 @@ int initSDL2() {
       i++;
     }
 
-    /* set hintS for different path in SDL_render.c - see SDL2sources */
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, 0);
-
-    /* initialize renderer FORCE A RENDERER TO DEBUG*/
+    /* initialize renderer */
     globalrenderer = SDL_CreateRenderer(globalwindow, -1, 0);
     if (globalrenderer == NULL) {
       printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
@@ -97,7 +159,7 @@ int initSDL2() {
     }
   }
 
-  // Initialize PNG, TIF, JPG loading
+  /* Initialize PNG, TIF, JPG loading */
   if (success == TRUE) {
     int imgFlags = IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_JPG;
     if (!(IMG_Init(imgFlags) & imgFlags)) {
@@ -107,37 +169,55 @@ int initSDL2() {
     }
   }
 
-  /*  create global textures
-          for X86 use  SDL_PIXELFORMAT_ARGB8888,
-          for beaglebone black use SDL_PIXELFORMAT_RGB565*/
+  /*
+   * create global textures
+   *       for X86 use  SDL_PIXELFORMAT_ARGB8888,
+   *       for beaglebone black use SDL_PIXELFORMAT_RGB565
+   */
   if (success == TRUE) {
+#if BBB /* compile with -D BBB for beaglebone black */
+    globaltexture = SDL_CreateTexture(globalrenderer, SDL_PIXELFORMAT_RGB888,
+                                      SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
+                                      SCREEN_HEIGHT);
+#else /* default back to X86 without -D specified */
     globaltexture = SDL_CreateTexture(globalrenderer, SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH,
                                       SCREEN_HEIGHT);
+#endif
     if (globaltexture == NULL) {
       printf("Texture could not be created! SDL Error: %s\n", SDL_GetError());
       success = FALSE;
     }
 
     SDL_SetRenderDrawColor(globalrenderer, 255, 0, 0,
-                           255); // for drawing, clearing; RGBA
-    SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND); // FIXME
-    // FIXME remove the above line after alpha works - installed for alpha
+                           255); /* for drawing, clearing; RGBA */
+    SDL_SetRenderDrawBlendMode(globalrenderer, SDL_BLENDMODE_BLEND);
+    /* FIXME remove the above line after alpha works - installed for alpha */
+  }
+
+  /* Initialize SDL_ttf */
+  if (success && TTF_Init() == -1) {
+    printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+    success = FALSE;
   }
 
   printf("SDL2init complete\n\n\n");
   return (success);
 }
 
+/**
+ * closeSDL2() - close SDL2, set global variables to NULL
+ * Return: nothing
+ */
 void closeSDL2() {
 
-  // Destroy window
+  /* Destroy window */
   SDL_DestroyWindow(globalwindow);
   SDL_DestroyRenderer(globalrenderer);
   SDL_DestroyTexture(globaltexture);
 
   globalwindow = NULL;
   globalrenderer = NULL;
-  // Quit SDL subsystems IMG_Load
+  /* Quit SDL subsystems IMG_Load */
   SDL_Quit();
 }
