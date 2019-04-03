@@ -99,7 +99,7 @@ int initSDL2() {
       i++;
     }
 
-    /* initialize renderer FORCE A RENDERER TO DEBUG*/
+    /* initialize renderer */
     globalrenderer = SDL_CreateRenderer(globalwindow, -1, 0);
     if (globalrenderer == NULL) {
       printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
