@@ -32,7 +32,7 @@ char *datapath;               /* path to maps, images, sprites */
 /**
  * find_datadir() - set datapath to images, maps, sprites data
  * Try to find datadir relative to the executable path
- * Return: NULL
+ * Return: datapath or NULL on error
  */
 char *find_datadir() {
   char *base_path;
