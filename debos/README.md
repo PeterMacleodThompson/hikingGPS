@@ -45,7 +45,7 @@ $ scripts/qemu-boot-efi debian-uefi-sid-amd64.img
 To create the images, run:
 
 ```sh
-$GOPATH/bin/debos -t suite:sid debos/debian-base.yaml
+$GOPATH/bin/debos -t suite:sid -t architecture:armhf debos/debian-base.yaml
 $GOPATH/bin/debos -t suite:sid debos/debian-boneblack.yaml
 ```
 
